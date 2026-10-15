@@ -42,7 +42,6 @@ GENERATED = re.compile(
 # Subjects that usually mean low-value work. Only a hint: the model makes the call.
 TRIVIAL = {
     "merge": r"^merge\b",
-    "revert": r"^revert\b",
     "typo": r"\btypos?\b|错别字",
     "format": r"\b(format(ting)?|prettier|lint|eslint|stylelint)\b|格式化",
     "deps": r"^(chore|build)\(deps(-dev)?\)|\bbump\b|升级依赖|更新依赖",

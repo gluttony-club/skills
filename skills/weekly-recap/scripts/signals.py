@@ -10,6 +10,8 @@ import re
 from collections import defaultdict
 
 CONVENTIONAL = re.compile(r"^(?:\W+\s*)?(?P<type>[a-z]+)(?:\((?P<scope>[^)]+)\))?!?:\s", re.I)
+# Fixes written without a conventional prefix: "fix upload", "[hotfix] …", "修复上传失败".
+FIX = re.compile(r"^(?:\W+\s*)?(?:fix(?:e[sd]|ing)?|hotfix|bugfix)\b|修复|修正", re.I)
 REVERT = re.compile(r"This reverts commit ([0-9a-f]{7,40})")
 # Words that usually mean the commit explains a cause or a trade-off.
 EXPLAINS = re.compile(
@@ -25,6 +27,13 @@ def conventional(subject: str) -> tuple[str | None, str | None]:
     """("feat", "tracking") for "feat(tracking): …"; leading emoji are ignored."""
     match = CONVENTIONAL.match(subject)
     return (match.group("type").lower(), match.group("scope")) if match else (None, None)
+
+
+def is_fix(commit: dict) -> bool:
+    """A conventional type decides when present; otherwise look for fix words."""
+    if commit["type"]:
+        return commit["type"] in ("fix", "hotfix")
+    return bool(FIX.search(commit["subject"]))
 
 
 def build(commits: list[dict], file_lists: dict[str, list[str]]) -> dict:
@@ -46,7 +55,7 @@ def build(commits: list[dict], file_lists: dict[str, list[str]]) -> dict:
                 touched[path].append(c)
     repeated = []
     for path, cs in touched.items():
-        fixes = [c for c in cs if c["type"] == "fix"]
+        fixes = [c for c in cs if is_fix(c)]
         if len(cs) >= 3 and len(fixes) >= 2:
             repeated.append({"file": path, "commits": [c["sha"] for c in cs], "fixes": len(fixes)})
     repeated.sort(key=lambda r: (-r["fixes"], -len(r["commits"])))

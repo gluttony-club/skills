@@ -8,7 +8,7 @@
 
 Data lives in $WEEKLY_RECAP_HOME (default ~/.weekly-recap):
 
-  config.json              repos, optional author_aliases and timezone
+  config.json              repos, optional author_aliases
   style.md                 the user's own writing preferences (optional)
   2026/week-42.md          a Monday-to-Sunday recap (ISO year and week)
   2026/2026-09-28_to_2026-10-11.md   any other range, under its start year

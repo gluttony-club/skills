@@ -13,7 +13,7 @@ gluttony-club 的开源 [Agent Skills](https://agentskills.io) 合集，同时�
 
 ### weekly-recap 能做什么
 
-- 选择时间：本周、上周、指定某周或自定义时间段（默认北京时间）
+- 选择时间：本周、上周、指定某周或自定义时间段，按你电脑的本地时区，从起始日 00:00:00 到结束日 23:59:59
 - 跨多个仓库收集**你自己**的提交：覆盖所有分支，按作者时间筛选，自动去重，并统计改动规模
 - 自动生成提交和 PR 链接（支持 GitHub、GitLab、CNB、Gitee、Bitbucket；PR 编号从本地合并记录识别，不联网）
 - 从提交中找出可能的攻克点和踩坑线索，写之前先问你补充细节
@@ -81,7 +81,7 @@ Open-source [Agent Skills](https://agentskills.io) by gluttony-club, for Claude 
 
 ### What weekly-recap does
 
-- Pick a range: this week, last week, a given week, or a custom period (Asia/Shanghai by default).
+- Pick a range: this week, last week, a given week, or a custom period, in your computer's local time zone, from 00:00:00 on the first day to 23:59:59 on the last.
 - Collect **your own** commits across repositories: every branch, filtered by author date, de-duplicated, with change sizes.
 - Link commits and pull requests (GitHub, GitLab, CNB, Gitee, Bitbucket; PR numbers come from local merge commits, no network).
 - Point out likely hard problems and pitfalls, and ask you for the story before writing.

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Resolve the date range for a weekly recap and print it as JSON.
 
-Weeks run Monday to Sunday in the given time zone (default Asia/Shanghai).
+All times are in this machine's local time zone. A range runs from 00:00:00 on
+its first day to 23:59:59 on its last; a week runs Monday to Sunday.
 
   date_range.py presets               this week and last week
   date_range.py week DATE             the week containing DATE (YYYY-MM-DD)
@@ -15,34 +16,11 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import re
 import sys
-
-DEFAULT_TZ = "Asia/Shanghai"
-# Used only when the IANA time zone database is missing (e.g. Windows without tzdata).
-FALLBACK_HOURS = {"Asia/Shanghai": 8, "UTC": 0}
-OFFSET_RE = re.compile(r"^([+-])(\d{1,2}):?(\d{2})?$")
 
 
 class InputError(Exception):
     pass
-
-
-def resolve_tz(name: str) -> dt.tzinfo:
-    """Accept an IANA name such as Asia/Shanghai or an offset such as +08:00."""
-    match = OFFSET_RE.match(name)
-    if match:
-        sign, hours, minutes = match.groups()
-        delta = dt.timedelta(hours=int(hours), minutes=int(minutes or 0))
-        return dt.timezone(-delta if sign == "-" else delta)
-    try:
-        from zoneinfo import ZoneInfo
-
-        return ZoneInfo(name)
-    except Exception:
-        if name in FALLBACK_HOURS:
-            return dt.timezone(dt.timedelta(hours=FALLBACK_HOURS[name]))
-        raise InputError(f"unknown time zone {name!r}; use a name like Asia/Shanghai or an offset like +08:00")
 
 
 def parse_date(text: str) -> dt.date:
@@ -52,11 +30,30 @@ def parse_date(text: str) -> dt.date:
         raise InputError(f"invalid date {text!r}, expected YYYY-MM-DD") from None
 
 
-def describe(start: dt.date, end: dt.date) -> dict:
-    """A Monday-to-Sunday range is a 'week' and gets its ISO week number."""
+def local_timezone() -> str:
+    """This machine's time zone as shown to the user, e.g. "CST (UTC+08:00)"."""
+    now = dt.datetime.now().astimezone()
+    offset = now.strftime("%z")
+    return f"{now.tzname()} (UTC{offset[:3]}:{offset[3:]})"
+
+
+def bounds(start: dt.date, end: dt.date) -> tuple[dt.datetime, dt.datetime]:
+    """First and last second of the range in local time, both inclusive.
+
+    astimezone() on a naive time reads it as local time with that day's offset,
+    so a range across a daylight saving change still starts and ends at midnight.
+    """
     if end < start:
         raise InputError(f"end date {end} is before start date {start}")
-    result = {"start": start.isoformat(), "end": end.isoformat(), "days": (end - start).days + 1}
+    return (dt.datetime.combine(start, dt.time(0, 0, 0)).astimezone(),
+            dt.datetime.combine(end, dt.time(23, 59, 59)).astimezone())
+
+
+def describe(start: dt.date, end: dt.date) -> dict:
+    """A Monday-to-Sunday range is a 'week' and gets its ISO week number."""
+    first, last = bounds(start, end)
+    result = {"start": start.isoformat(), "end": end.isoformat(), "days": (end - start).days + 1,
+              "start_at": first.isoformat(), "end_at": last.isoformat()}
     if start.weekday() == 0 and end - start == dt.timedelta(days=6):
         iso_year, iso_week, _ = start.isocalendar()
         result.update(kind="week", iso_year=iso_year, iso_week=iso_week)
@@ -72,7 +69,6 @@ def week_of(day: dt.date) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--tz", default=DEFAULT_TZ, help=f"time zone (default {DEFAULT_TZ})")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("presets", help="this week and last week")
     p_week = sub.add_parser("week", help="the week containing DATE")
@@ -82,9 +78,8 @@ def main() -> int:
     p_period.add_argument("end", nargs="?")
     args = parser.parse_args()
 
-    tz = resolve_tz(args.tz)
-    today = dt.datetime.now(tz).date()
-    out = {"timezone": args.tz, "today": today.isoformat()}
+    today = dt.date.today()
+    out = {"timezone": local_timezone(), "today": today.isoformat()}
 
     if args.command == "presets":
         out["this_week"] = week_of(today)

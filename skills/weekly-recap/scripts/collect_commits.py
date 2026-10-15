@@ -26,7 +26,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import links  # noqa: E402
 import signals  # noqa: E402
-from date_range import DEFAULT_TZ, InputError, parse_date, resolve_tz  # noqa: E402
+from date_range import InputError, bounds, local_timezone, parse_date  # noqa: E402
 from store import config_path, load_config  # noqa: E402
 
 # Separators that never appear in commit text, so the log output parses safely.
@@ -111,12 +111,12 @@ def parse_numstat(block: str) -> list[dict]:
     return files
 
 
-def to_local(iso: str, tz: dt.tzinfo) -> dt.datetime:
+def to_local(iso: str) -> dt.datetime:
     iso = iso[:-1] + "+00:00" if iso.endswith("Z") else iso  # Python < 3.11 rejects "Z"
-    return dt.datetime.fromisoformat(iso).astimezone(tz)
+    return dt.datetime.fromisoformat(iso).astimezone()  # this machine's local time zone
 
 
-def collect_repo(entry: dict, start: dt.datetime, end: dt.datetime, tz: dt.tzinfo, config: dict, args) -> dict:
+def collect_repo(entry: dict, start: dt.datetime, end: dt.datetime, config: dict, args) -> dict:
     path = Path(entry["path"]).expanduser()
     result = {"name": entry.get("name") or path.name, "path": str(path), "ok": False}
     top = git_toplevel(path) if path.exists() else None
@@ -145,7 +145,7 @@ def collect_repo(entry: dict, start: dt.datetime, end: dt.datetime, tz: dt.tzinf
         sha, name, email, authored_iso, ref, subject, body = fields
         if name.lower() not in wanted and email.lower() not in wanted:
             continue  # git matched a substring only, e.g. "Jo" inside "John"
-        authored = to_local(authored_iso, tz)
+        authored = to_local(authored_iso)
         if not start <= authored <= end:
             continue
         key = (email.lower(), authored_iso, subject)  # same commit copied by cherry-pick or rebase
@@ -249,16 +249,14 @@ def cmd_repos(args, config: dict) -> dict:
 
 
 def cmd_collect(args, config: dict) -> dict:
-    tz = resolve_tz(args.tz)
-    start = dt.datetime.combine(parse_date(args.start), dt.time.min, tzinfo=tz)
-    end = dt.datetime.combine(parse_date(args.end), dt.time.max, tzinfo=tz)
-    if end < start:
-        raise InputError("--end is before --start")
-    repos = [collect_repo(r, start, end, tz, config, args) for r in select_repos(config, args.repo)]
+    start, end = bounds(parse_date(args.start), parse_date(args.end))
+    repos = [collect_repo(r, start, end, config, args) for r in select_repos(config, args.repo)]
     return {
-        "timezone": args.tz,
+        "timezone": local_timezone(),
         "start": args.start,
         "end": args.end,
+        "start_at": start.isoformat(),
+        "end_at": end.isoformat(),
         "size_rule": "large: >5 files or >100 lines; small: <=2 files and <20 lines; "
                      "lock files and build output are not counted",
         "total_commits": sum(r.get("commit_count", 0) for r in repos),
@@ -269,7 +267,6 @@ def cmd_collect(args, config: dict) -> dict:
 def main() -> int:
     config = load_config()
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--tz", default=config.get("timezone", DEFAULT_TZ), help="time zone (default Asia/Shanghai)")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("repos", help="list configured repositories")
     p = sub.add_parser("collect", help="collect commits in a date range")

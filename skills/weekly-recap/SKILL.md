@@ -42,7 +42,9 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 
    Ask for dates in a plain message. If your environment has a multiple-choice
    prompt, use it only to pick among the options above, never for typing dates.
-   Confirm the resolved `start ~ end` with the user before continuing.
+   Confirm the resolved `start ~ end` with the user before continuing. Every
+   range is in the user's local time zone (this machine's), from 00:00:00 on the
+   first day to 23:59:59 on the last (`start_at`, `end_at`).
 2. Choose the repositories:
 
    ```bash

@@ -29,8 +29,7 @@ in `$WEEKLY_RECAP_HOME`).
       "links": { "commit": "https://git.example.com/tool/commit/{sha}",
                  "pr": "https://git.example.com/tool/merge/{number}" } }
   ],
-  "author_aliases": ["old-name", "old@example.com"],
-  "timezone": "Asia/Shanghai"
+  "author_aliases": ["old-name", "old@example.com"]
 }
 ```
 
@@ -40,7 +39,10 @@ in `$WEEKLY_RECAP_HOME`).
 | `repos[].path` | Local clone. |
 | `repos[].links` | Optional. Link templates when the host is not GitHub, GitLab, CNB, Gitee or Bitbucket. |
 | `author_aliases` | Optional. Other names or emails that are also the user, added to each repo's `git config user.name` / `user.email`. |
-| `timezone` | Optional. IANA name or offset such as `+08:00`; default `Asia/Shanghai`. |
+
+Dates use this machine's local time zone; there is no time zone setting. On
+macOS or Linux, run the scripts with `TZ=Asia/Tokyo` (for example) to use
+another one.
 
 `store.py add-repo` writes this file (creating it if needed, backing it up
 before changes). Other keys can be edited by hand.

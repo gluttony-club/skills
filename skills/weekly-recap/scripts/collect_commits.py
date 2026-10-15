@@ -20,7 +20,6 @@ import os
 import re
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -199,17 +198,12 @@ def collect_repo(entry: dict, start: dt.datetime, end: dt.datetime, config: dict
     for item in clues["reverts"]:
         item["sha"] = item["sha"][:10]
 
-    git_dir = Path(run_git(top, "rev-parse", "--absolute-git-dir").strip())
-    fetch_head = git_dir / "FETCH_HEAD"
     result.update({
         "ok": True,
         "path": str(top),
         "authors": authors,
         "web_url": urls["web_url"],
         "forge": urls["forge"],
-        "has_remote": bool(run_git(top, "remote").strip()),
-        "hours_since_fetch": round((time.time() - fetch_head.stat().st_mtime) / 3600, 1)
-        if fetch_head.exists() else None,
         "commit_count": len(commits),
         "duplicates_skipped": duplicates,
         "signals": clues,

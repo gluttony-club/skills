@@ -77,11 +77,13 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 
    Then check each repo in the output:
    - `ok: false`: tell the user the `error` and carry on with the others.
-   - `has_remote: true` and `hours_since_fetch` null or above 24: commits pushed
-     from elsewhere may be missing. Offer `git -C <path> fetch --all --prune`; run
-     it only if the user agrees, then collect again.
    - No commits anywhere: say so and ask whether the range or the author
      identity is wrong before writing anything.
+
+   Do not fetch or ask about fetching: the user's own commits are already in
+   local history. Only if the user says work is missing (made on another
+   machine, in the cloud, or squash-merged on the web), offer
+   `git -C <path> fetch --all --prune`, run it once they agree, and collect again.
 
 4. Judge what matters. `size` is `large` (>5 files or >100 lines), `medium`, or
    `small` (≤2 files and <20 lines); lock files and build output are not counted.

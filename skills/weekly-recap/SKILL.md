@@ -1,6 +1,6 @@
 ---
 name: weekly-recap
-description: Write a weekly recap (周报) of the user's own git commits in the current repository, to present at the weekly team meeting what they did and what is worth sharing. Use when the user asks for a weekly report or recap, 周报, 写周报, or what they did this week or last week.
+description: Write a weekly recap (周报) from the user's own git commits across their repositories, to present at the weekly team meeting what they did, highlights, hard problems and pitfalls, with links. Use when the user asks for a weekly report or recap, 周报, 写周报, 周会汇报, or what they did this week or last week.
 license: MIT
 metadata:
   author: gluttony-club

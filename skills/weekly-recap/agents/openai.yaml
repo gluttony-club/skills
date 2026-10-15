@@ -1,0 +1,4 @@
+interface:
+  display_name: "Weekly Recap"
+  short_description: "Weekly meeting recap from your own git commits"
+  default_prompt: "Use $weekly-recap to write my recap for last week."

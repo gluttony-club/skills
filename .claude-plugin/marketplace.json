@@ -1,0 +1,23 @@
+{
+  "name": "gluttony-club",
+  "description": "Agent Skills by gluttony-club: weekly recaps and OKR self-reviews from your own work history.",
+  "owner": {
+    "name": "gluttony-club",
+    "url": "https://github.com/gluttony-club"
+  },
+  "plugins": [
+    {
+      "name": "weekly-recap",
+      "description": "Write your weekly meeting recap from your own git commits across repositories: highlights, hard problems, pitfalls and links, saved locally.",
+      "version": "0.1.0",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/weekly-recap"],
+      "license": "MIT",
+      "homepage": "https://github.com/gluttony-club/skills",
+      "repository": "https://github.com/gluttony-club/skills",
+      "keywords": ["weekly-report", "recap", "git", "周报"],
+      "category": "productivity"
+    }
+  ]
+}

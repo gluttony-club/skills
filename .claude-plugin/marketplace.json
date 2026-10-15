@@ -8,6 +8,11 @@
   "plugins": [
     {
       "name": "weekly-recap",
+      "displayName": "Weekly Recap",
+      "author": {
+        "name": "gluttony-club",
+        "url": "https://github.com/gluttony-club"
+      },
       "description": "Write your weekly meeting recap from your own git commits across repositories: highlights, hard problems, pitfalls and links, saved locally.",
       "version": "0.2.0",
       "source": "./",

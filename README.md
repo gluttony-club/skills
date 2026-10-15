@@ -75,6 +75,7 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 ```bash
 pip install skills-ref
 agentskills validate skills/weekly-recap
+python3 -m unittest discover -s tests
 ```
 
 ## English
@@ -144,6 +145,7 @@ Say "write my weekly recap for last week", or invoke it: `/weekly-recap:weekly-r
 ```bash
 pip install skills-ref
 agentskills validate skills/weekly-recap
+python3 -m unittest discover -s tests
 ```
 
 ## License

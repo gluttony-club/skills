@@ -33,19 +33,52 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
    Ask for dates in a plain message. If your environment has a multiple-choice
    prompt, use it only to pick among the options above, never for typing dates.
    Confirm the resolved `start ~ end` with the user before continuing.
-2. Find the user's identity with `git config user.name` and `git config user.email`.
-3. List their commits on all branches in that range, using `start` and `end`
-   from step 1:
+2. Choose the repositories:
 
    ```bash
-   TZ=Asia/Shanghai git log --all --no-merges \
-     --author="<name or email>" \
-     --since="<start> 00:00:00" --until="<end> 23:59:59" \
-     --pretty=format:"%h %ad %s" --date=short
+   python3 <skill-dir>/scripts/collect_commits.py repos
    ```
 
-4. Write the report in this shape, using the repository's directory name as the
-   project name. The title uses the range from step 1:
+   It lists the repos in `~/.weekly-recap/config.json` (`ok: false` means the
+   path is missing or not a git repo) and whether the current directory is a
+   git repo outside the config. Let the user pick some or all, and offer to
+   include the current repo. With no config, use the current repo or paths the
+   user gives. The config looks like this; create or edit it only if the user
+   asks:
+
+   ```json
+   { "repos": [ { "name": "project-a", "path": "/path/to/project-a" } ] }
+   ```
+
+3. Collect the commits:
+
+   ```bash
+   python3 <skill-dir>/scripts/collect_commits.py collect --start START --end END \
+     [--repo NAME_OR_PATH ...] [--author NAME_OR_EMAIL ...] [--output FILE]
+   ```
+
+   - `--repo` takes a configured name or a path and can repeat; without it,
+     every configured repo is used.
+   - Commits are the user's own (git `user.name` / `user.email` of each repo, or
+     `--author`), on every branch, authored within the range, merges excluded.
+   - Use `--output FILE` for long ranges and read the file.
+
+   Then check each repo in the output:
+   - `ok: false`: tell the user the `error` and carry on with the others.
+   - `has_remote: true` and `hours_since_fetch` null or above 24: commits pushed
+     from elsewhere may be missing. Offer `git -C <path> fetch --all --prune`; run
+     it only if the user agrees, then collect again.
+   - No commits anywhere: say so and ask whether the range or the author
+     identity is wrong before writing anything.
+
+4. Judge what matters. `size` is `large` (>5 files or >100 lines), `medium`, or
+   `small` (≤2 files and <20 lines); lock files and build output are not counted.
+   `trivial_hints` flags subjects like merge, typo, format, deps, wip. Read the
+   subject and body to understand each commit; for a large commit whose purpose
+   is unclear, look at `git -C <path> show --stat <sha>`.
+
+5. Write the report in this shape, with one block per repo, named by its
+   `name`. The title uses the range from step 1:
 
    ```markdown
    # 周报 (2026-10-12 ~ 2026-10-18)
@@ -57,10 +90,12 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
    - 修复登录态丢失问题
    ```
 
-5. Show the draft to the user and apply their changes.
+6. Show the draft to the user and apply their changes.
 
 ## Rules
 
 - Describe outcomes, not file edits. No type tags like `[feat]` or commit hashes.
 - Merge related commits into one item. Drop trivial ones (formatting, typos, merges).
+- Large changes and repeated fixes of one problem deserve detail; small ones
+  get one line or are merged.
 - Only report what the commits support.

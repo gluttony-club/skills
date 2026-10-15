@@ -4,7 +4,7 @@ description: Write a weekly recap (周报) from the user's own git commits acros
 license: MIT
 metadata:
   author: gluttony-club
-  version: "0.2.0"
+  version: "0.2.1"
 ---
 
 # Weekly recap
@@ -81,8 +81,12 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 
    Then check each repo in the output:
    - `ok: false`: tell the user the `error` and carry on with the others.
-   - No commits anywhere: say so and ask whether the range or the author
-     identity is wrong before writing anything.
+   - `commit_count: 0`: the repo had no work in the range. Leave it out of the
+     recap and carry on; do not ask about it.
+   - No commits in any repo: tell the user in one message, naming the range,
+     the repos and the `authors` checked, and end the task. Do not ask a
+     question or offer other repos, ranges or next steps; the user chose them
+     already and will ask again if something was wrong.
 
    Do not fetch or ask about fetching: the user's own commits are already in
    local history. Only if the user says work is missing (made on another

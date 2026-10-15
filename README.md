@@ -53,7 +53,14 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 
 ### 更新
 
-- **Claude Code**：`/plugin marketplace update gluttony-club`，然后在 `/plugin` 中更新 `weekly-recap`。
+- **Claude Code**：在终端运行下面的命令，它会先检查插件市场有没有新版本；更新后重启 Claude Code 生效。Claude 桌面应用的插件页面没有更新按钮，也用这条命令。
+
+  ```bash
+  claude plugin update weekly-recap@gluttony-club
+  ```
+
+  也可以在 Claude Code 会话中执行 `/plugin marketplace update gluttony-club`，再在 `/plugin` 中更新 `weekly-recap`。
+- **自动更新**：第三方插件市场默认不自动更新。在 Claude Code 会话中打开 `/plugin`，进入 **Marketplaces**，选中 `gluttony-club`，选择 **Enable auto-update**，之后发布的新版本会在后台自动更新。
 - **Codex**：删除 `~/.codex/skills/weekly-recap` 后重新执行上面的安装命令。
 - **手动安装**：软链接到本仓库的克隆则 `git pull` 即可。
 
@@ -115,7 +122,14 @@ Say "write my weekly recap for last week", or invoke it: `/weekly-recap:weekly-r
 
 ### Update
 
-- **Claude Code**: `/plugin marketplace update gluttony-club`, then update `weekly-recap` in `/plugin`.
+- **Claude Code**: run this in your shell. It checks the marketplace for a new version first; restart Claude Code to apply it. The plugins page in the Claude desktop app has no update button, so use this command there too.
+
+  ```bash
+  claude plugin update weekly-recap@gluttony-club
+  ```
+
+  Or, inside a Claude Code session, run `/plugin marketplace update gluttony-club`, then update `weekly-recap` in `/plugin`.
+- **Auto-update**: third-party marketplaces don't update automatically by default. In a Claude Code session, open `/plugin`, go to **Marketplaces**, select `gluttony-club` and choose **Enable auto-update**; new releases then install in the background.
 - **Codex**: delete `~/.codex/skills/weekly-recap` and run the install command again.
 - **Manual**: `git pull` if you symlinked a clone of this repository.
 

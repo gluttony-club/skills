@@ -95,6 +95,11 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
    subject and body to understand each commit; for a large commit whose purpose
    is unclear, look at `git -C <path> show --stat <sha>`.
 
+   Watch for squash merges done on the web: a subject ending in `(#N)` with a
+   PR whose `merged_at` is null. While its feature branch still exists, the same
+   work also appears as that branch's own commits, so it is counted twice. Treat
+   them as one work item linked to the PR, and do not add up their sizes.
+
    Each repo also has `signals`, pointers to what may be worth telling:
    - `topics`: commits grouped by conventional-commit scope, largest first; a
      starting point for merging commits into work items.

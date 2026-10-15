@@ -116,11 +116,14 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 
 7. Show the draft to the user as Markdown and apply their changes.
 
-8. Save it once the user is happy, writing the final Markdown to a temporary
-   file first:
+8. Save it once the user is happy. Pass the final Markdown on stdin with a
+   quoted heredoc, so no temporary file lands in a repository:
 
    ```bash
-   python3 <skill-dir>/scripts/store.py save --start START --end END --input FILE
+   python3 <skill-dir>/scripts/store.py save --start START --end END <<'RECAP'
+   # 周报 (START ~ END)
+   …the final Markdown…
+   RECAP
    ```
 
    If it returns `"exists": true` (exit code 3), a recap for this range is
@@ -130,8 +133,10 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 
 9. Learn preferences. If the user's edits in step 7 reflect a lasting
    preference (wording, emphasis, a section they always drop), ask whether to
-   remember it, and only then append one short line to `style.md` in the data
-   directory (create it if missing). Never record report content there.
+   remember it, and only then append one short line to `style.md` in
+   `data_home` (from step 0), e.g.
+   `printf '%s\n' '- 本周重点最多两条' >> "<data_home>/style.md"`. Never record
+   report content there.
 
 ## Rules
 

@@ -10,8 +10,8 @@ gluttony-club 的开源 [Agent Skills](https://agentskills.io) 合集，同时�
 
 | Skill | 说明 | 状态 |
 | --- | --- | --- |
-| `weekly-report` | 从自己的 git 提交生成周报 / 时间段总结 | 开发中 |
-| `annual-review` | 读取一年的周报，再用 git 补漏，生成年终总结 | 计划中 |
+| `weekly-recap` | 从自己的 git 提交生成周报：做了什么、值得讲的亮点与攻克点、踩过的坑，用于周会汇报 | 开发中 |
+| `okr-review` | 基于周报和 git 记录撰写 OKR 自评（目标、关键成果、权重、自评分、个人总结），周期可自选（半年 / 一年） | 计划中 |
 
 所有数据只在本地读取和保存。安装方式会在第一个 skill 可用后补充。
 
@@ -23,8 +23,8 @@ Planned skills:
 
 | Skill | Description | Status |
 | --- | --- | --- |
-| `weekly-report` | Weekly reports and period summaries from your own git commits | In progress |
-| `annual-review` | A yearly review built from a year of weekly reports, with gaps filled from git | Planned |
+| `weekly-recap` | A weekly recap from your own git commits for the team meeting: what you did, highlights, hard problems solved, pitfalls | In progress |
+| `okr-review` | An OKR self-review (objectives, key results, weights, self-scores, personal summary) drafted from your weekly recaps and git history, for any review period (half year / year) | Planned |
 
 All data is read and stored locally. Installation instructions will follow once the first skill is ready.
 

@@ -12,22 +12,40 @@ metadata:
 Turn the user's git commits from one week into a short recap, grouped by project,
 that they can present at the weekly team meeting.
 
+`<skill-dir>` below is the directory containing this SKILL.md. Scripts need
+Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
+
 ## Steps
 
-1. Ask the user which week: this week or last week (Monday to Sunday,
-   Asia/Shanghai time). Tell them the concrete dates before continuing.
+1. Choose the date range. Never compute dates yourself; use the script:
+
+   ```bash
+   python3 <skill-dir>/scripts/date_range.py presets
+   ```
+
+   Offer the user, with the concrete dates from the output:
+   - this week (`this_week`)
+   - last week (`last_week`)
+   - another week: ask for any date in it, then run `date_range.py week DATE`
+   - a custom range, e.g. across a holiday: ask for the start and end dates, then
+     run `date_range.py period START [END]` (END defaults to today)
+
+   Ask for dates in a plain message. If your environment has a multiple-choice
+   prompt, use it only to pick among the options above, never for typing dates.
+   Confirm the resolved `start ~ end` with the user before continuing.
 2. Find the user's identity with `git config user.name` and `git config user.email`.
-3. List their commits on all branches for that week:
+3. List their commits on all branches in that range, using `start` and `end`
+   from step 1:
 
    ```bash
    TZ=Asia/Shanghai git log --all --no-merges \
      --author="<name or email>" \
-     --since="<monday> 00:00:00" --until="<sunday> 23:59:59" \
+     --since="<start> 00:00:00" --until="<end> 23:59:59" \
      --pretty=format:"%h %ad %s" --date=short
    ```
 
 4. Write the report in this shape, using the repository's directory name as the
-   project name:
+   project name. The title uses the range from step 1:
 
    ```markdown
    # 周报 (2026-10-12 ~ 2026-10-18)

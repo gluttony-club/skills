@@ -4,7 +4,7 @@ description: Write a weekly recap (周报) from the user's own git commits acros
 license: MIT
 metadata:
   author: gluttony-club
-  version: "0.2.1"
+  version: "0.3.0"
 ---
 
 # Weekly recap

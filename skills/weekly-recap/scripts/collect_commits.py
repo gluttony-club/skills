@@ -20,6 +20,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -277,14 +278,25 @@ def main() -> int:
     p.add_argument("--author", action="append", default=[], help="name or email; repeatable")
     p.add_argument("--max-files", type=int, default=5, help="largest files listed per commit (default 5)")
     p.add_argument("--body-chars", type=int, default=300, help="commit body characters kept (default 300)")
-    p.add_argument("--output", help="write the JSON to this file instead of printing it")
+    p.add_argument("--output", nargs="?", const="", metavar="FILE",
+                   help="write the JSON to FILE instead of printing it; with no FILE, to the system temp directory")
     args = parser.parse_args()
 
     out = cmd_repos(args, config) if args.command == "repos" else cmd_collect(args, config)
     text = json.dumps(out, ensure_ascii=False, indent=2)
-    if getattr(args, "output", None):
-        Path(args.output).expanduser().write_text(text + "\n", encoding="utf-8")
-        print(json.dumps({"written": args.output, "total_commits": out["total_commits"]}))
+    output = getattr(args, "output", None)
+    if output is not None:
+        if output:
+            target = Path(output).expanduser()
+            target.write_text(text + "\n", encoding="utf-8")
+        else:
+            # A new file in the system temp directory, outside any repository and readable
+            # only by the user (mkstemp creates it with mode 0600 and a unique name).
+            fd, name = tempfile.mkstemp(prefix=f"weekly-recap-{args.start}_{args.end}-", suffix=".json")
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fh.write(text + "\n")
+            target = Path(name)
+        print(json.dumps({"written": str(target), "total_commits": out["total_commits"]}))
     else:
         print(text)
     return 0

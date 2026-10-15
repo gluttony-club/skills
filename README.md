@@ -59,7 +59,7 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 
 ### 数据与隐私
 
-- 脚本只运行本地 `git` 命令，只读写 `~/.weekly-recap/`（可用环境变量 `WEEKLY_RECAP_HOME` 修改），不会上传到任何服务器，也不会自行 `git fetch`（需要时先征得你同意）。
+- 脚本只运行本地 `git` 命令，只读写 `~/.weekly-recap/`（可用环境变量 `WEEKLY_RECAP_HOME` 修改）；时间范围较长时，收集到的提交会临时写入系统临时目录（仅你本人可读）。不会上传到任何服务器，也不会自行 `git fetch`（需要时先征得你同意）。
 - 周报草稿由你所使用的 AI 工具生成：提交标题、正文、文件路径和改动统计会作为对话内容发送给该工具的模型服务商，与你平时在对话中粘贴代码相同。涉及敏感仓库时请留意。
 - 目录结构与配置项见 [references/data.md](skills/weekly-recap/references/data.md)。
 
@@ -121,7 +121,7 @@ Say "write my weekly recap for last week", or invoke it: `/weekly-recap:weekly-r
 
 ### Data and privacy
 
-- The scripts run only local `git` commands and read and write only `~/.weekly-recap/` (or `$WEEKLY_RECAP_HOME`). Nothing is uploaded, and `git fetch` runs only after you agree.
+- The scripts run only local `git` commands and read and write only `~/.weekly-recap/` (or `$WEEKLY_RECAP_HOME`), plus, for long ranges, a file of collected commits in the system temp directory that only you can read. Nothing is uploaded, and `git fetch` runs only after you agree.
 - The recap is written by the AI tool you use, so commit subjects and bodies, file paths and change counts are sent to that tool's model provider as conversation content, just as when you paste code into a chat. Keep this in mind for sensitive repositories.
 - Layout and config keys: [references/data.md](skills/weekly-recap/references/data.md).
 

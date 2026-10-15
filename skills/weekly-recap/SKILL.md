@@ -68,14 +68,16 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 
    ```bash
    python3 <skill-dir>/scripts/collect_commits.py collect --start START --end END \
-     [--repo NAME_OR_PATH ...] [--author NAME_OR_EMAIL ...] [--output FILE]
+     [--repo NAME_OR_PATH ...] [--author NAME_OR_EMAIL ...] [--output]
    ```
 
    - `--repo` takes a configured name or a path and can repeat; without it,
      every configured repo is used.
    - Commits are the user's own (git `user.name` / `user.email` of each repo, or
      `--author`), on every branch, authored within the range, merges excluded.
-   - Use `--output FILE` for long ranges and read the file.
+   - For long ranges add `--output` with no file name: the JSON goes to the
+     system temp directory, never into a repository, and `written` gives the
+     path to read.
 
    Then check each repo in the output:
    - `ok: false`: tell the user the `error` and carry on with the others.

@@ -50,6 +50,10 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
    { "repos": [ { "name": "project-a", "path": "/path/to/project-a" } ] }
    ```
 
+   Links are detected for GitHub, GitLab, CNB, Gitee and Bitbucket remotes. For
+   other hosts a repo entry may add
+   `"links": {"commit": "https://host/…/{sha}", "pr": "https://host/…/{number}"}`.
+
 3. Collect the commits:
 
    ```bash
@@ -77,7 +81,23 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
    subject and body to understand each commit; for a large commit whose purpose
    is unclear, look at `git -C <path> show --stat <sha>`.
 
-5. Write the report in this shape, with one block per repo, named by its
+   Each repo also has `signals`, pointers to what may be worth telling:
+   - `topics`: commits grouped by conventional-commit scope, largest first; a
+     starting point for merging commits into work items.
+   - `repeated_fixes`: files hit by several commits including two or more fixes,
+     a sign of a hard problem or a pitfall.
+   - `reverts`: work that was undone, often a pitfall.
+   - `explained`: commits whose body explains why; read these for causes and
+     trade-offs.
+
+5. Ask about highlights and pitfalls. Git shows what changed, rarely what was
+   hard or what was learned. From the signals, name 1–3 candidates (e.g. "the
+   upload fixes on Safari look like a hard problem") and ask the user in one
+   message what was hard, the root cause, or the lesson. Accept "skip" and write
+   without them; never invent causes the user did not give and the commits do
+   not show.
+
+6. Write the report in this shape, with one block per repo, named by its
    `name`. The title uses the range from step 1:
 
    ```markdown
@@ -85,16 +105,23 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 
    project-name
 
-   - 完成订阅支付接入
+   - 完成订阅支付接入（[#128](https://example.com/pr/128)）
      - 对接下单与回调接口
-   - 修复登录态丢失问题
+   - 修复登录态丢失问题（[a1b2c3d](https://example.com/commit/a1b2c3d)）
    ```
 
-6. Show the draft to the user and apply their changes.
+   Links: give each main item one link at the end. Prefer its pull request
+   (`prs[].url`; when there are several, the one whose `from_branch` is the
+   feature branch rather than a release or sync), else its main commit
+   (`commit_url`, shown as the 7-character sha). Leave the link out when the
+   URL is null.
+
+7. Show the draft to the user and apply their changes.
 
 ## Rules
 
-- Describe outcomes, not file edits. No type tags like `[feat]` or commit hashes.
+- Describe outcomes, not file edits. No type tags like `[feat]`; hashes only
+  as link text.
 - Merge related commits into one item. Drop trivial ones (formatting, typos, merges).
 - Large changes and repeated fixes of one problem deserve detail; small ones
   get one line or are merged.

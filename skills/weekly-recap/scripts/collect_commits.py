@@ -4,7 +4,7 @@
   collect_commits.py repos
       configured repositories, and whether the current directory is one of them
   collect_commits.py collect --start DATE --end DATE [--repo NAME_OR_PATH ...]
-      commits authored in the range, with change sizes, for each repository
+      commits authored in the range, with change sizes, links and clues, per repository
 
 Repositories come from $WEEKLY_RECAP_HOME/config.json (default ~/.weekly-recap),
 or from --repo. Only local git commands run; nothing is fetched from the network.
@@ -24,6 +24,8 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import links  # noqa: E402
+import signals  # noqa: E402
 from date_range import DEFAULT_TZ, InputError, parse_date, resolve_tz  # noqa: E402
 
 # Separators that never appear in commit text, so the log output parses safely.
@@ -148,7 +150,7 @@ def collect_repo(entry: dict, start: dt.datetime, end: dt.datetime, tz: dt.tzinf
                   f"--since={start.isoformat()}", f"--pretty=format:{LOG_FORMAT}")
 
     wanted = {a.lower() for a in authors}
-    commits, seen, duplicates = [], set(), 0
+    commits, seen, duplicates, file_lists = [], set(), 0, {}
     for record in raw.split(RECORD):
         header, _, numstat = record.partition(END)
         fields = header.split(FIELD)
@@ -171,11 +173,15 @@ def collect_repo(entry: dict, start: dt.datetime, end: dt.datetime, tz: dt.tzinf
         added, deleted = sum(f["added"] for f in counted), sum(f["deleted"] for f in counted)
         largest = sorted(files, key=lambda f: f["added"] + f["deleted"], reverse=True)[: args.max_files]
         body = body.strip()
+        kind, scope = signals.conventional(subject)
+        file_lists[sha] = [f["path"] for f in counted]
         commits.append({
-            "sha": sha[:10],
+            "sha": sha,
             "authored_at": authored.isoformat(timespec="minutes"),
             "ref": ref,
             "subject": subject,
+            "type": kind,
+            "scope": scope,
             "body": body[: args.body_chars] + ("…" if len(body) > args.body_chars else ""),
             "files_changed": len(counted),
             "lines_added": added,
@@ -187,17 +193,40 @@ def collect_repo(entry: dict, start: dt.datetime, end: dt.datetime, tz: dt.tzinf
         })
     commits.sort(key=lambda c: c["authored_at"])
 
+    urls = links.templates(top, entry)
+    prs = links.pull_requests(top, start.isoformat(), {c["sha"] for c in commits})
+    for c in commits:
+        found = prs.get(c["sha"], [])
+        squashed = links.squash_pr(c["subject"])
+        if squashed and all(p["number"] != squashed for p in found):
+            found.append({"number": squashed, "merged_at": None, "from_branch": None})
+        c["commit_url"] = urls["commit"].format(sha=c["sha"]) if "commit" in urls else None
+        c["prs"] = [{**p, "url": urls["pr"].format(number=p["number"]) if "pr" in urls else None}
+                    for p in found]
+    clues = signals.build(commits, file_lists)
+    for c in commits:
+        c["sha"] = c["sha"][:10]
+    for group in (clues["topics"], clues["repeated_fixes"]):
+        for item in group:
+            item["commits"] = [sha[:10] for sha in item["commits"]]
+    clues["explained"] = [sha[:10] for sha in clues["explained"]]
+    for item in clues["reverts"]:
+        item["sha"] = item["sha"][:10]
+
     git_dir = Path(run_git(top, "rev-parse", "--absolute-git-dir").strip())
     fetch_head = git_dir / "FETCH_HEAD"
     result.update({
         "ok": True,
         "path": str(top),
         "authors": authors,
+        "web_url": urls["web_url"],
+        "forge": urls["forge"],
         "has_remote": bool(run_git(top, "remote").strip()),
         "hours_since_fetch": round((time.time() - fetch_head.stat().st_mtime) / 3600, 1)
         if fetch_head.exists() else None,
         "commit_count": len(commits),
         "duplicates_skipped": duplicates,
+        "signals": clues,
         "commits": commits,
     })
     return result

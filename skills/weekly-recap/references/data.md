@@ -55,6 +55,7 @@ Free-form notes the user agreed to keep, one per line, for example:
 
 ```markdown
 - 周报附上 PR 链接
+- 不要自动复制到剪贴板
 - 纯文案改动不单独列出
 ```
 

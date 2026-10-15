@@ -5,7 +5,10 @@
                                             a taken name becomes "parent/dir"
   store.py list [--latest N]                saved recaps, oldest first
   store.py path --start DATE --end DATE     where the recap for a range is saved
-  store.py save --start DATE --end DATE [--input FILE] [--overwrite]
+  store.py save --start DATE --end DATE [--input FILE] [--overwrite] [--copy]
+  store.py text --start DATE --end DATE [--copy]
+                                            the saved recap as plain text for a spreadsheet
+                                            cell or a chat; --copy puts it on the clipboard
 
 Data lives in $WEEKLY_RECAP_HOME (default ~/.weekly-recap):
 
@@ -32,6 +35,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import plain  # noqa: E402
 from date_range import InputError, describe, parse_date  # noqa: E402
 
 TITLE = re.compile(r"^#\s*[^(（]*[(（]\s*(\d{4}-\d{2}-\d{2})\s*~\s*(\d{4}-\d{2}-\d{2})\s*[)）]")
@@ -164,7 +168,22 @@ def cmd_save(args) -> dict:
                     "hint": "ask the user, then re-run with --overwrite (a .bak copy is kept)"}
         saved = backup(path)
     write_atomic(path, text if text.endswith("\n") else text + "\n")
-    return {"saved": True, "path": str(path), "range": rng, "backup": str(saved) if saved else None}
+    out = {"saved": True, "path": str(path), "range": rng, "backup": str(saved) if saved else None}
+    return {**out, **plain_output(text, args.copy)} if args.copy else out
+
+
+def plain_output(markdown: str, copy: bool) -> dict:
+    """The plain text, copied when asked; the text itself is returned only if it is not on the clipboard."""
+    text = plain.plain_text(markdown)
+    tool = plain.copy_to_clipboard(text) if copy else None
+    return {"copied": tool is not None, "clipboard": tool} if tool else {"copied": False, "plain_text": text}
+
+
+def cmd_text(args) -> dict:
+    path, _ = recap_path(args.start, args.end)
+    if not path.exists():
+        raise InputError(f"no recap saved for {args.start} ~ {args.end}")
+    return {"path": str(path), **plain_output(path.read_text(encoding="utf-8"), args.copy)}
 
 
 def main() -> int:
@@ -175,16 +194,19 @@ def main() -> int:
     p.add_argument("--name", help="section name in recaps (default: directory name)")
     p = sub.add_parser("list", help="saved recaps, oldest first")
     p.add_argument("--latest", type=int, metavar="N", help="only the N most recent")
-    for name in ("path", "save"):
+    for name in ("path", "save", "text"):
         p = sub.add_parser(name)
         p.add_argument("--start", required=True)
         p.add_argument("--end", required=True)
         if name == "save":
             p.add_argument("--input", default="-", help="Markdown file, or - for stdin (default)")
             p.add_argument("--overwrite", action="store_true", help="replace an existing recap, keeping a backup")
+        if name in ("save", "text"):
+            p.add_argument("--copy", action="store_true", help="copy the plain-text form to the clipboard")
     args = parser.parse_args()
 
-    handler = {"add-repo": cmd_add_repo, "list": cmd_list, "path": cmd_path, "save": cmd_save}[args.command]
+    handler = {"add-repo": cmd_add_repo, "list": cmd_list, "path": cmd_path, "save": cmd_save,
+               "text": cmd_text}[args.command]
     out = handler(args)
     print(json.dumps(out, ensure_ascii=False, indent=2))
     return 3 if out.get("exists") and not out.get("saved", True) else 0

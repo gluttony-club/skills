@@ -21,7 +21,10 @@ ran before the session refresh, so Safari sent an expired token.
   - 刷新页面不丢失已填写的内容
 - **优惠券叠加**（已提测）：结算时自动选出最优组合，不可叠加的券给出原因
 - iOS 图片上传偶发失败已修复
-- 其他：支付配置改为按环境读取；订单列表空状态文案修正；商品图懒加载
+- 其他
+  - 支付配置改为按环境读取
+  - 订单列表空状态文案修正
+  - 商品图懒加载
 
 ## api-server
 
@@ -30,14 +33,16 @@ ran before the session refresh, so Safari sent an expired token.
 
 ## 难点与经验
 
-- **iOS 上传偶发失败**：上传早于登录态刷新，Safari 带上了过期 token；先加的自动重试仍用旧 token，只会重复失败，已回滚 → 上传前先刷新会话，问题消失。经验：先确认根因再加重试
+- **iOS 上传偶发失败**：一周内反复出现
+  - 原因：上传早于登录态刷新，Safari 带上了过期 token；先加的自动重试仍用旧 token，只会重复失败，已回滚
+  - 解决：上传前先刷新会话 → 问题消失。经验：先确认根因再加重试
 ```
 
 Why it works:
 
 - No summary at the top: the two bold names are the week's highlights, and
   they lead their section.
-- 9 coupon commits became one item; three small changes share the `其他` line
+- 9 coupon commits became one item; three small changes sit under `其他`
   instead of being dropped; lint and typo commits are gone.
 - Statuses appear only where the pull requests show them.
 - The iOS story is told once, in `难点与经验`; its item stays one short line.
@@ -54,7 +59,9 @@ Most weeks look like this: no `难点与经验` section at all.
 
 - **会员积分抵扣**（已提测）：结算时可用积分抵扣，最多抵扣订单金额的 20%
 - 商品详情页支持视频主图
-- 其他：购物车数量上限提示；修复切换地址后运费不刷新
+- 其他
+  - 购物车数量上限提示
+  - 修复切换地址后运费不刷新
 ```
 
 ## Before and after
@@ -92,8 +99,9 @@ Most weeks look like this: no `难点与经验` section at all.
 
 **Small work dropped to fit**
 
-- Before: three real fixes left out because the section was "full".
-- After: `- 其他：A；B；C`
+- Before: three real fixes left out because the section was "full", or all
+  of them squeezed onto one line as `其他：A；B；C`.
+- After: `- 其他` with one sub-item per fix.
 
 **A routine bug written up as a hard problem**
 

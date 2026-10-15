@@ -4,7 +4,7 @@ description: Write a weekly recap (周报) from the user's own git commits acros
 license: MIT
 metadata:
   author: gluttony-club
-  version: "0.4.0"
+  version: "0.5.0"
 ---
 
 # Weekly recap
@@ -131,26 +131,36 @@ user's request already answers ("上周的周报", "tad_web 的周报").
    release, test or sync branch; without a PR use `commit_url`.
 
 7. Save it right away, replacing any recap saved for the same range (the old one
-   is kept as `.bak-<time>`). Pass the Markdown on stdin with a quoted heredoc,
-   so no temporary file lands in a repository:
+   is kept as `.bak-<time>`), and copy its plain-text form to the clipboard.
+   Pass the Markdown on stdin with a quoted heredoc, so no temporary file lands
+   in a repository:
 
    ```bash
-   python3 <skill-dir>/scripts/store.py save --start START --end END --overwrite <<'RECAP'
+   python3 <skill-dir>/scripts/store.py save --start START --end END --overwrite --copy <<'RECAP'
    # 周报 (START ~ END)
    …the Markdown…
    RECAP
    ```
 
    In PowerShell, pipe a here-string instead:
-   `@'…'@ | py -3 <skill-dir>/scripts/store.py save --start START --end END --overwrite`.
+   `@'…'@ | py -3 <skill-dir>/scripts/store.py save --start START --end END --overwrite --copy`.
 
-8. Show the recap as Markdown with the saved `path`. Below it, in one line,
+   The plain-text form is what a spreadsheet cell or a chat box keeps: no title,
+   numbered items, `【】` for bold. Leave out `--copy` when `style.md` says not
+   to touch the clipboard.
+
+8. Show the recap as Markdown with the saved `path`. Then say in one line that
+   the plain-text version is on the clipboard, ready to paste into a
+   spreadsheet or chat (`copied: true`); when it is not (`copied: false`), show
+   `plain_text` in a fenced `text` block instead, so the user can copy it
+   as-is. `store.py text --start START --end END --copy` produces it again for
+   a saved recap. Below that, in one line,
    name any work that looked hard (repeated fixes, a revert) but has no stated
    cause, and say the user can add the story for `难点与经验`; this is not a
    question and needs no answer. Repos left out for having no commits can be
    named in the same line.
 
-9. If the user asks for changes, apply them and save again with `--overwrite`.
+9. If the user asks for changes, apply them and save again with `--overwrite --copy`.
    When they state a lasting preference ("以后都…", "always…"), append one
    short line to `style.md` in `data_home` (from step 0), e.g.
    `printf '%s\n' '- 周报附上 PR 链接' >> "<data_home>/style.md"`. Never record

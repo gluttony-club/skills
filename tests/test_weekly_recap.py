@@ -21,6 +21,7 @@ SCRIPTS = Path(__file__).resolve().parent.parent / "skills" / "weekly-recap" / "
 sys.path.insert(0, str(SCRIPTS))
 
 import links  # noqa: E402
+import plain  # noqa: E402
 import signals  # noqa: E402
 from collect_commits import trivial_hints  # noqa: E402
 
@@ -185,6 +186,61 @@ class StoreTest(RepoCase):
         self.assertIn("v1", Path(replaced["backup"]).read_text(encoding="utf-8"))
         self.assertIn("v2", Path(replaced["path"]).read_text(encoding="utf-8"))
         self.assertTrue(replaced["path"].endswith(os.path.join("2026", "week-42.md")))
+
+
+class PlainTextTest(RepoCase):
+    RECAP = """# 周报 (2026-10-12 ~ 2026-10-18)
+
+## shop-web
+
+- **新版结算页**（已合入 master）：下单从 4 步减到 2 步
+  - 刷新页面不丢失已填写的内容
+- 商品详情页支持 `video` 主图，见 [#141](https://example.com/pr/141)
+- 其他
+  - 支付配置改为按环境读取
+  - 商品图懒加载
+
+## 难点与经验
+
+- **iOS 上传偶发失败**：一周内反复出现
+  - 原因：上传早于登录态刷新
+  - 解决：先刷新会话
+"""
+
+    def test_structure_survives_as_characters(self):
+        self.assertEqual(plain.plain_text(self.RECAP), (
+            "一、shop-web\n"
+            "1. 【新版结算页】（已合入 master）：下单从 4 步减到 2 步\n"
+            "   - 刷新页面不丢失已填写的内容\n"
+            "2. 商品详情页支持 video 主图，见 #141（https://example.com/pr/141）\n"
+            "3. 其他\n"
+            "   - 支付配置改为按环境读取\n"
+            "   - 商品图懒加载\n"
+            "\n"
+            "二、难点与经验\n"
+            "1. 【iOS 上传偶发失败】：一周内反复出现\n"
+            "   - 原因：上传早于登录态刷新\n"
+            "   - 解决：先刷新会话\n"))
+
+    def test_an_older_one_line_other_item_is_split(self):
+        out = plain.plain_text("## web\n\n- 首页改版\n- 其他：配置改为按环境读取；修复空状态文案\n")
+        self.assertEqual(out, "一、web\n1. 首页改版\n2. 其他\n   - 配置改为按环境读取\n   - 修复空状态文案\n")
+
+    def test_copy_without_a_clipboard_tool_returns_the_text(self):
+        empty = self.tmp / "no-tools"
+        empty.mkdir()
+        env = {**self.env, "PATH": str(empty)}
+        proc = subprocess.run([sys.executable, str(SCRIPTS / "store.py"), "save", "--start", "2026-10-12",
+                               "--end", "2026-10-18", "--copy"], input=self.RECAP, capture_output=True,
+                              text=True, encoding="utf-8", env=env)
+        out = json.loads(proc.stdout)
+        self.assertTrue(out["saved"])
+        self.assertFalse(out["copied"])
+        self.assertTrue(out["plain_text"].startswith("一、shop-web\n1. 【新版结算页】"))
+        again = json.loads(subprocess.run([sys.executable, str(SCRIPTS / "store.py"), "text", "--start",
+                                           "2026-10-12", "--end", "2026-10-18"], capture_output=True,
+                                          text=True, encoding="utf-8", env=env).stdout)
+        self.assertEqual(again["plain_text"], out["plain_text"])
 
 
 class SignalsTest(unittest.TestCase):

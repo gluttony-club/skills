@@ -97,32 +97,22 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
    without them; never invent causes the user did not give and the commits do
    not show.
 
-6. Write the report in this shape, with one block per repo, named by its
-   `name`. The title uses the range from step 1:
+6. Write the recap in Markdown. Before writing, read
+   [references/writing-guide.md](references/writing-guide.md) (layout, budget,
+   emphasis, links, hard problems and pitfalls) and
+   [references/examples.md](references/examples.md) (a full example and
+   before/after pairs). The title is `# 周报 (START ~ END)` with the range from
+   step 1; each repo section is named by its `name`.
 
-   ```markdown
-   # 周报 (2026-10-12 ~ 2026-10-18)
+   For links: when a commit has several `prs`, use the one whose `from_branch`
+   is the feature branch rather than a release, test or sync branch; without a
+   PR use `commit_url`; with neither, no link.
 
-   project-name
-
-   - 完成订阅支付接入（[#128](https://example.com/pr/128)）
-     - 对接下单与回调接口
-   - 修复登录态丢失问题（[a1b2c3d](https://example.com/commit/a1b2c3d)）
-   ```
-
-   Links: give each main item one link at the end. Prefer its pull request
-   (`prs[].url`; when there are several, the one whose `from_branch` is the
-   feature branch rather than a release or sync), else its main commit
-   (`commit_url`, shown as the 7-character sha). Leave the link out when the
-   URL is null.
-
-7. Show the draft to the user and apply their changes.
+7. Show the draft to the user as Markdown and apply their changes.
 
 ## Rules
 
+- Only report what the commits and the user's answers support.
 - Describe outcomes, not file edits. No type tags like `[feat]`; hashes only
   as link text.
-- Merge related commits into one item. Drop trivial ones (formatting, typos, merges).
-- Large changes and repeated fixes of one problem deserve detail; small ones
-  get one line or are merged.
-- Only report what the commits support.
+- Merge related commits into one item; drop trivial ones.

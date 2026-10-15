@@ -4,7 +4,7 @@ description: Write a weekly recap (周报) from the user's own git commits acros
 license: MIT
 metadata:
   author: gluttony-club
-  version: "0.6.0"
+  version: "0.6.1"
 ---
 
 # Weekly recap
@@ -17,9 +17,15 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 
 ## Flow
 
+Every request for a recap runs the whole flow from step 0, including a second
+or third request in the same conversation: ask the range and the repos again
+and never reuse an earlier answer, unless the new request itself names them.
+
 The user answers **one prompt with two questions**, the range and the repos,
-and nothing else before the recap is written and saved. Do not ask anything not listed here:
-no date confirmation, no "remember this repo?", no questions about hard
+and nothing else before the recap is written and saved. The only exception is
+a repo typed in as a new path (step 2), after which the repo question is asked
+again, as often as the user keeps adding paths. Do not ask anything not listed
+here: no date confirmation, no "remember this repo?", no questions about hard
 problems before writing, no "replace the saved recap?". Skip a question the
 user's request already answers ("上周的周报", "tad_web 的周报").
 
@@ -48,10 +54,12 @@ user's request already answers ("上周的周报", "tad_web 的周报").
      without confirming it.
    - **Repos** (multiple choice): `current_dir` first, labelled as the current
      directory, then configured repos in the order `repos` lists them (most
-     recently committed to first). If they do not all fit, add an option for
-     "all N remembered repos". "Other" takes a path or a configured name; a
-     path not yet configured is new. Skip `current_dir` when it is not a git
-     repo; with neither a current repo nor a config, ask for paths only.
+     recently committed to first), leaving out the configured repo that is the
+     current directory (`in_config: true`) so it is listed once. If they do
+     not all fit, add an option for "all N remembered repos". "Other" takes a
+     path or a configured name; a path not yet configured is new. Skip
+     `current_dir` when it is not a git repo; with neither a current repo nor a
+     config, ask for paths only.
 
    Every range is in the user's local time zone (this machine's), from 00:00:00
    on the first day to 23:59:59 on the last (`start_at`, `end_at`).
@@ -65,6 +73,17 @@ user's request already answers ("上周的周报", "tad_web 的周报").
 
    A taken name becomes `parent/dir` (`renamed_from` says so). Config keys are
    described in [references/data.md](references/data.md).
+
+   A path typed into "Other" adds a repo; it is not the whole answer, since
+   typing there can drop the boxes the user ticked. One "Other" entry may hold
+   several paths, separated by commas, semicolons, spaces or new lines (keep a
+   path that contains spaces whole when it is quoted or plainly one path).
+   When the answer adds any new repo and there are other repos the user could
+   also pick, run `collect_commits.py repos` again and ask the repo question
+   again, alone, with the repos just added first (labelled as just added) and
+   the rest as in step 1. Repeat for as long as the answer adds new paths; the
+   first answer that adds none is the selection. When the new paths are the
+   only repos there are, go on without asking again.
 
 3. Collect the commits:
 
@@ -104,7 +123,7 @@ user's request already answers ("上周的周报", "tad_web 的周报").
    Watch for squash merges done on the web: a subject ending in `(#N)` with a
    PR whose `merged_at` is null. While its feature branch still exists, the same
    work also appears as that branch's own commits, so it is counted twice. Treat
-   them as one work item linked to the PR, and do not add up their sizes.
+   them as one work item, and do not add up their sizes.
 
    Each repo also has `signals`, pointers to what may be worth telling:
    - `topics`: commits grouped by conventional-commit scope, largest first; a
@@ -156,11 +175,10 @@ user's request already answers ("上周的周报", "tad_web 的周报").
    line with the saved `path` (the Markdown original) and, when `copied` is
    true, that the same text is already on the clipboard.
    `store.py text --start START --end END --copy` produces it again for a
-   saved recap. Below that, in one line,
-   name any work that looked hard (repeated fixes, a revert) but has no stated
-   cause, and say the user can add the story for `难点与经验`; this is not a
-   question and needs no answer. Repos left out for having no commits can be
-   named in the same line.
+   saved recap. Below that, in one line, name any work that looked hard
+   (repeated fixes, a revert) but has no stated cause, and say the user can add
+   the story for `难点与经验`; this is not a question and needs no answer. Repos
+   left out for having no commits can be named in the same line.
 
 9. If the user asks for changes, apply them and save again with `--overwrite --copy`.
    When they state a lasting preference ("以后都…", "always…"), append one

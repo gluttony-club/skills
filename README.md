@@ -8,7 +8,7 @@ gluttony-club 的开源 [Agent Skills](https://agentskills.io) 合集，同时�
 
 | Skill | 说明 | 状态 |
 | --- | --- | --- |
-| [`weekly-recap`](skills/weekly-recap/SKILL.md) | 从自己的 git 提交生成周报：做了什么、哪些最重要、哪些最难，用于周会汇报 | v0.6.0 |
+| [`weekly-recap`](skills/weekly-recap/SKILL.md) | 从自己的 git 提交生成周报：做了什么、哪些最重要、哪些最难，用于周会汇报 | v0.6.1 |
 | `okr-review` | 基于周报和 git 记录撰写 OKR 自评（目标、关键成果、权重、自评分、个人总结），周期可自选（半年 / 一年） | 计划中 |
 
 ### weekly-recap 能做什么
@@ -49,9 +49,11 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 
 直接说"帮我写上周的周报"，或显式调用：Claude Code 中为 `/weekly-recap:weekly-recap`（插件安装）或 `/weekly-recap`（手动安装），Codex 中为 `$weekly-recap`。
 
-每次只问两件事：时间范围（本周、上周或自定义）和要包含的仓库（多选，可输入新路径）。选完直接生成并保存，选过的仓库会自动记住，没有提交的仓库自动略过。
+每次写周报都会重新问两件事：时间范围（本周、上周或自定义）和要包含的仓库（多选）。在「其他」里输入新仓库路径（可一次填多个，也可分几次添加）后，它们会加入选项让你和其他仓库一起勾选。选完直接生成并保存，选过的仓库会自动记住，没有提交的仓库自动略过。
 
 ### 更新
+
+各版本的变化见 [CHANGELOG](skills/weekly-recap/CHANGELOG.md)。
 
 - **Claude Code**：在终端运行下面的命令，它会先检查插件市场有没有新版本；更新后重启 Claude Code 生效。Claude 桌面应用的插件页面没有更新按钮，也用这条命令。
 
@@ -84,7 +86,7 @@ Open-source [Agent Skills](https://agentskills.io) by gluttony-club, for Claude 
 
 | Skill | Description | Status |
 | --- | --- | --- |
-| [`weekly-recap`](skills/weekly-recap/SKILL.md) | A weekly recap from your own git commits for the team meeting: what you did, what mattered most, what was hard | v0.6.0 |
+| [`weekly-recap`](skills/weekly-recap/SKILL.md) | A weekly recap from your own git commits for the team meeting: what you did, what mattered most, what was hard | v0.6.1 |
 | `okr-review` | An OKR self-review (objectives, key results, weights, self-scores, personal summary) drafted from your weekly recaps and git history, for any review period | Planned |
 
 ### What weekly-recap does
@@ -119,9 +121,11 @@ Requires git and Python 3.9+ (standard library only).
 
 ### Use
 
-Say "write my weekly recap for last week", or invoke it: `/weekly-recap:weekly-recap` (Claude Code plugin), `/weekly-recap` (manual install), `$weekly-recap` (Codex). It asks two things only, the range (this week, last week or your own) and the repositories (pick several or type a new path), then writes and saves the recap. Picked repositories are remembered; ones with no commits are skipped.
+Say "write my weekly recap for last week", or invoke it: `/weekly-recap:weekly-recap` (Claude Code plugin), `/weekly-recap` (manual install), `$weekly-recap` (Codex). Each time it asks two things only, the range (this week, last week or your own) and the repositories (pick several; newly typed paths, one or several at a time, join the choices so you can tick them with the others), then writes and saves the recap. Picked repositories are remembered; ones with no commits are skipped.
 
 ### Update
+
+What changed in each version: [CHANGELOG](skills/weekly-recap/CHANGELOG.md) (in Chinese).
 
 - **Claude Code**: run this in your shell. It checks the marketplace for a new version first; restart Claude Code to apply it. The plugins page in the Claude desktop app has no update button, so use this command there too.
 

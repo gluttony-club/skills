@@ -67,6 +67,10 @@ def git_toplevel(path: Path) -> Path | None:
         return None
 
 
+def same_path(a: str | Path, b: str | Path) -> bool:
+    return os.path.realpath(Path(a).expanduser()) == os.path.realpath(Path(b).expanduser())
+
+
 def git_config(repo: Path, key: str) -> str:
     proc = subprocess.run(["git", "-C", str(repo), "config", "--get", key], capture_output=True, text=True)
     return proc.stdout.strip()
@@ -219,9 +223,14 @@ def select_repos(config: dict, wanted: list[str]) -> list[dict]:
     chosen = []
     for item in wanted:
         match = next((r for r in configured if r.get("name") == item), None)
-        if match is None and not Path(item).expanduser().exists():
-            names = ", ".join(r.get("name", "?") for r in configured) or "none configured"
-            raise InputError(f"{item!r} is neither a configured repo ({names}) nor an existing path")
+        if match is None:
+            path = Path(item).expanduser()
+            if not path.exists():
+                names = ", ".join(r.get("name", "?") for r in configured) or "none configured"
+                raise InputError(f"{item!r} is neither a configured repo ({names}) nor an existing path")
+            # A path to a configured repo keeps its name and link settings.
+            top = git_toplevel(path)
+            match = next((r for r in configured if top and same_path(r["path"], top)), None)
         chosen.append(match or {"path": str(Path(item).expanduser().resolve())})
     return chosen
 
@@ -232,8 +241,7 @@ def cmd_repos(args, config: dict) -> dict:
         path = Path(r.get("path", "")).expanduser()
         repos.append({**r, "ok": path.exists() and git_toplevel(path) is not None})
     cwd = git_toplevel(Path.cwd())
-    in_config = cwd is not None and any(
-        os.path.realpath(Path(r.get("path", "")).expanduser()) == os.path.realpath(cwd) for r in repos)
+    in_config = cwd is not None and any(same_path(r.get("path", ""), cwd) for r in repos)
     return {
         "config_path": str(config_path()),
         "config_exists": config_path().exists(),

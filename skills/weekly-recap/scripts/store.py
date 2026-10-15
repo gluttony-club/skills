@@ -92,9 +92,12 @@ def cmd_add_repo(args) -> dict:
     repos = config.setdefault("repos", [])
     name = args.name or Path(top).name
     for repo in repos:
-        same_path = os.path.realpath(os.path.expanduser(repo.get("path", ""))) == os.path.realpath(top)
-        if same_path or repo.get("name") == name:
+        if os.path.realpath(os.path.expanduser(repo.get("path", ""))) == os.path.realpath(top):
             return {"added": False, "reason": "already configured", "repo": repo}
+    for repo in repos:
+        if repo.get("name") == name:
+            return {"added": False, "reason": f"name {name!r} is used by another repo; pass --name",
+                    "path": top, "conflict": repo}
     saved = backup(config_path()) if config_path().exists() else None
     repos.append({"name": name, "path": top})
     write_atomic(config_path(), json.dumps(config, ensure_ascii=False, indent=2) + "\n")

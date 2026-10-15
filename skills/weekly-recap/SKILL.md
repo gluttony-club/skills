@@ -59,8 +59,10 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 
    Offer to remember a repo for next time, and only if the user agrees run
    `python3 <skill-dir>/scripts/store.py add-repo [PATH] [--name NAME]` (it
-   creates the config if needed and backs it up before changing it). Config
-   keys are described in [references/data.md](references/data.md).
+   creates the config if needed and backs it up before changing it). If it
+   returns `added: false` with a `conflict`, the name is taken: ask the user for
+   another and re-run with `--name`. Config keys are described in
+   [references/data.md](references/data.md).
 
 3. Collect the commits:
 

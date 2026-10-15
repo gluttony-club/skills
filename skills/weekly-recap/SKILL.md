@@ -17,6 +17,16 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 
 ## Steps
 
+0. Load context:
+
+   ```bash
+   python3 <skill-dir>/scripts/store.py list --latest 2
+   ```
+
+   If `style_path` is set, read it: these are the user's own preferences and
+   override the writing guide. Skim the latest recaps for continuity (ongoing
+   work, the user's wording); do not copy their mistakes.
+
 1. Choose the date range. Never compute dates yourself; use the script:
 
    ```bash
@@ -43,16 +53,12 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
    path is missing or not a git repo) and whether the current directory is a
    git repo outside the config. Let the user pick some or all, and offer to
    include the current repo. With no config, use the current repo or paths the
-   user gives. The config looks like this; create or edit it only if the user
-   asks:
+   user gives.
 
-   ```json
-   { "repos": [ { "name": "project-a", "path": "/path/to/project-a" } ] }
-   ```
-
-   Links are detected for GitHub, GitLab, CNB, Gitee and Bitbucket remotes. For
-   other hosts a repo entry may add
-   `"links": {"commit": "https://host/…/{sha}", "pr": "https://host/…/{number}"}`.
+   Offer to remember a repo for next time, and only if the user agrees run
+   `python3 <skill-dir>/scripts/store.py add-repo [PATH] [--name NAME]` (it
+   creates the config if needed and backs it up before changing it). Config
+   keys are described in [references/data.md](references/data.md).
 
 3. Collect the commits:
 
@@ -109,6 +115,23 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
    PR use `commit_url`; with neither, no link.
 
 7. Show the draft to the user as Markdown and apply their changes.
+
+8. Save it once the user is happy, writing the final Markdown to a temporary
+   file first:
+
+   ```bash
+   python3 <skill-dir>/scripts/store.py save --start START --end END --input FILE
+   ```
+
+   If it returns `"exists": true` (exit code 3), a recap for this range is
+   already saved: ask whether to replace it, and only then re-run with
+   `--overwrite` (the old file is kept as `.bak-<time>`). Tell the user the
+   saved `path`.
+
+9. Learn preferences. If the user's edits in step 7 reflect a lasting
+   preference (wording, emphasis, a section they always drop), ask whether to
+   remember it, and only then append one short line to `style.md` in the data
+   directory (create it if missing). Never record report content there.
 
 ## Rules
 

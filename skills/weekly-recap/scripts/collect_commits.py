@@ -27,6 +27,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import links  # noqa: E402
 import signals  # noqa: E402
 from date_range import DEFAULT_TZ, InputError, parse_date, resolve_tz  # noqa: E402
+from store import config_path, load_config  # noqa: E402
 
 # Separators that never appear in commit text, so the log output parses safely.
 RECORD, FIELD, END = "\x1e", "\x1f", "\x1d"
@@ -50,21 +51,6 @@ TRIVIAL = {
     "debug-log": r"console\.log|debug log|调试日志",
     "release": r"^(chore\(release\)|release\b)|^v?\d+\.\d+\.\d+$",
 }
-
-
-def data_home() -> Path:
-    env = os.environ.get("WEEKLY_RECAP_HOME")
-    return Path(env).expanduser() if env else Path.home() / ".weekly-recap"
-
-
-def load_config() -> dict:
-    path = data_home() / "config.json"
-    if not path.exists():
-        return {}
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        raise InputError(f"{path} is not valid JSON: {exc}") from None
 
 
 def run_git(repo: Path, *args: str) -> str:
@@ -255,8 +241,8 @@ def cmd_repos(args, config: dict) -> dict:
     in_config = cwd is not None and any(
         os.path.realpath(Path(r.get("path", "")).expanduser()) == os.path.realpath(cwd) for r in repos)
     return {
-        "config_path": str(data_home() / "config.json"),
-        "config_exists": (data_home() / "config.json").exists(),
+        "config_path": str(config_path()),
+        "config_exists": config_path().exists(),
         "repos": repos,
         "current_dir": {"git_repo": str(cwd) if cwd else None, "in_config": in_config},
     }

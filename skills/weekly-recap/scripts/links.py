@@ -41,6 +41,7 @@ def _git(repo: Path, *args: str) -> str:
 def web_url(remote: str) -> str | None:
     """https://host/owner/repo for an https, ssh or scp-style remote; credentials removed."""
     remote = remote.strip()
+    scheme = "https"
     scp = re.match(r"^[\w.-]+@([\w.-]+):(?!//)(.+)$", remote)  # git@host:owner/repo.git
     if scp:
         host, path = scp.groups()
@@ -49,8 +50,13 @@ def web_url(remote: str) -> str | None:
         if parts.scheme not in ("http", "https", "ssh", "git") or not parts.hostname:
             return None
         host, path = parts.hostname, parts.path  # .hostname drops user:token@ and :port
+        # The web UI shares an http(s) remote's scheme and port; an ssh or git port is not the web's.
+        if parts.scheme in ("http", "https"):
+            scheme = parts.scheme
+            if parts.port:
+                host = f"{host}:{parts.port}"
     path = re.sub(r"\.git$", "", path.strip("/"))
-    return f"https://{host}/{path}" if path else None
+    return f"{scheme}://{host}/{path}" if path else None
 
 
 def forge_of(web: str) -> str | None:

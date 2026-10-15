@@ -8,16 +8,15 @@ gluttony-club 的开源 [Agent Skills](https://agentskills.io) 合集，同时�
 
 | Skill | 说明 | 状态 |
 | --- | --- | --- |
-| [`weekly-recap`](skills/weekly-recap/SKILL.md) | 从自己的 git 提交生成周报：做了什么、值得讲的亮点与攻克点、踩过的坑，用于周会汇报 | v0.3.0 |
+| [`weekly-recap`](skills/weekly-recap/SKILL.md) | 从自己的 git 提交生成周报：做了什么、哪些最重要、哪些最难，用于周会汇报 | v0.4.0 |
 | `okr-review` | 基于周报和 git 记录撰写 OKR 自评（目标、关键成果、权重、自评分、个人总结），周期可自选（半年 / 一年） | 计划中 |
 
 ### weekly-recap 能做什么
 
 - 选择时间：本周、上周、指定某周或自定义时间段，按你电脑的本地时区，从起始日 00:00:00 到结束日 23:59:59
 - 跨多个仓库收集**你自己**的提交：覆盖所有分支，按作者时间筛选，自动去重，并统计改动规模
-- 自动生成提交和 PR 链接（支持 GitHub、GitLab、CNB、Gitee、Bitbucket；PR 编号从本地合并记录识别，不联网）
-- 从提交中找出可能的攻克点和踩坑线索；看不出原因的不会乱写，生成后你可以随时补充
-- 输出 Markdown 周报：本周重点、各项目进展、攻克点、踩坑与经验，重点加粗、条目带链接
+- 输出简洁的 Markdown 周报：按项目分组、按重要程度排序，最重要的 1–3 项加粗，小改动收进一行「其他」，能从分支看出时标注提测或合入状态
+- 真正有难度的问题才写进「难点与经验」，原因只取自提交说明，不会编造；默认不带链接，需要时说一句「周报附上 PR 链接」即可（支持 GitHub、GitLab、CNB、Gitee、Bitbucket，不联网）
 - 保存到本地，并记住你的仓库和写作偏好，越用越贴合
 
 ### 安装
@@ -84,16 +83,15 @@ Open-source [Agent Skills](https://agentskills.io) by gluttony-club, for Claude 
 
 | Skill | Description | Status |
 | --- | --- | --- |
-| [`weekly-recap`](skills/weekly-recap/SKILL.md) | A weekly recap from your own git commits for the team meeting: what you did, highlights, hard problems solved, pitfalls | v0.3.0 |
+| [`weekly-recap`](skills/weekly-recap/SKILL.md) | A weekly recap from your own git commits for the team meeting: what you did, what mattered most, what was hard | v0.4.0 |
 | `okr-review` | An OKR self-review (objectives, key results, weights, self-scores, personal summary) drafted from your weekly recaps and git history, for any review period | Planned |
 
 ### What weekly-recap does
 
 - Pick a range: this week, last week, a given week, or a custom period, in your computer's local time zone, from 00:00:00 on the first day to 23:59:59 on the last.
 - Collect **your own** commits across repositories: every branch, filtered by author date, de-duplicated, with change sizes.
-- Link commits and pull requests (GitHub, GitLab, CNB, Gitee, Bitbucket; PR numbers come from local merge commits, no network).
-- Point out likely hard problems and pitfalls without inventing causes; add the story afterwards if you like.
-- Write a Markdown recap: key outcomes, progress per project, hard problems, pitfalls and lessons, with emphasis and links.
+- Write a short Markdown recap: grouped by project, ordered by importance, the 1–3 most important items in bold, small changes on one "other" line, and a status where branches show it.
+- Hard problems and lessons only when the work was genuinely hard, with causes taken from commit messages, never invented. No links by default; ask for PR links once and they are added from then on (GitHub, GitLab, CNB, Gitee, Bitbucket, no network).
 - Save it locally and remember your repositories and writing preferences.
 
 ### Install

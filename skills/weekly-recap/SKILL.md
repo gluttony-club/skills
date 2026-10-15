@@ -1,10 +1,10 @@
 ---
 name: weekly-recap
-description: Write a weekly recap (周报) from the user's own git commits across their repositories, to present at the weekly team meeting what they did, highlights, hard problems and pitfalls, with links. Use when the user asks for a weekly report or recap, 周报, 写周报, 周会汇报, or what they did this week or last week.
+description: Write a weekly recap (周报) from the user's own git commits across their repositories, to present at the weekly team meeting what they did, what mattered most and what was hard. Use when the user asks for a weekly report or recap, 周报, 写周报, 周会汇报, or what they did this week or last week.
 license: MIT
 metadata:
   author: gluttony-club
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Weekly recap
@@ -110,25 +110,25 @@ user's request already answers ("上周的周报", "tad_web 的周报").
    - `topics`: commits grouped by conventional-commit scope, largest first; a
      starting point for merging commits into work items.
    - `repeated_fixes`: files hit by several commits including two or more fixes,
-     a sign of a hard problem or a pitfall.
-   - `reverts`: work that was undone, often a pitfall.
+     a sign of a hard problem.
+   - `reverts`: work that was undone, often a lesson.
    - `explained`: commits whose body explains why; read these for causes and
      trade-offs.
 
-5. Do not stop to ask about highlights or pitfalls. Write what the commits
-   support; for a hard problem or pitfall the signals point at but no commit
-   body explains, give what happened without a cause. Never invent causes.
+5. Do not stop to ask what was hard. Write what the commits support. A hard
+   problem goes into `难点与经验` only when a commit body states its cause;
+   otherwise its fix is an ordinary item. Never invent causes.
 
 6. Write the recap in Markdown. Before writing, read
-   [references/writing-guide.md](references/writing-guide.md) (layout, budget,
-   emphasis, links, hard problems and pitfalls) and
-   [references/examples.md](references/examples.md) (a full example and
+   [references/writing-guide.md](references/writing-guide.md) (layout, order,
+   emphasis, status, hard problems, length) and
+   [references/examples.md](references/examples.md) (full examples and
    before/after pairs). The title is `# 周报 (START ~ END)` with the range from
    step 1; each repo section is named by its `name`.
 
-   For links: when a commit has several `prs`, use the one whose `from_branch`
-   is the feature branch rather than a release, test or sync branch; without a
-   PR use `commit_url`; with neither, no link.
+   No links unless `style.md` asks for them. Then, when a commit has several
+   `prs`, use the one whose `from_branch` is the feature branch rather than a
+   release, test or sync branch; without a PR use `commit_url`.
 
 7. Save it right away, replacing any recap saved for the same range (the old one
    is kept as `.bak-<time>`). Pass the Markdown on stdin with a quoted heredoc,
@@ -145,19 +145,19 @@ user's request already answers ("上周的周报", "tad_web 的周报").
    `@'…'@ | py -3 <skill-dir>/scripts/store.py save --start START --end END --overwrite`.
 
 8. Show the recap as Markdown with the saved `path`. Below it, in one line,
-   name any hard problem or pitfall that lacks a cause and say the user can add
-   one; this is not a question and needs no answer. Repos left out for having
-   no commits can be named in the same line.
+   name any work that looked hard (repeated fixes, a revert) but has no stated
+   cause, and say the user can add the story for `难点与经验`; this is not a
+   question and needs no answer. Repos left out for having no commits can be
+   named in the same line.
 
 9. If the user asks for changes, apply them and save again with `--overwrite`.
    When they state a lasting preference ("以后都…", "always…"), append one
    short line to `style.md` in `data_home` (from step 0), e.g.
-   `printf '%s\n' '- 本周重点最多两条' >> "<data_home>/style.md"`. Never record
+   `printf '%s\n' '- 周报附上 PR 链接' >> "<data_home>/style.md"`. Never record
    report content there, and do not ask whether to remember a one-off edit.
 
 ## Rules
 
 - Only report what the commits and the user's own words support.
-- Describe outcomes, not file edits. No type tags like `[feat]`; hashes only
-  as link text.
+- Describe outcomes, not file edits. No type tags like `[feat]`, no hashes.
 - Merge related commits into one item; drop trivial ones.

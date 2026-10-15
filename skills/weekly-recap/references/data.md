@@ -54,7 +54,7 @@ keys can be edited by hand.
 Free-form notes the user agreed to keep, one per line, for example:
 
 ```markdown
-- 本周重点最多两条
+- 周报附上 PR 链接
 - 纯文案改动不单独列出
 ```
 

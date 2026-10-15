@@ -1,8 +1,8 @@
 # Writing guide
 
-The recap is read aloud at the weekly team meeting. The listener should learn, in
-about two minutes, what got done, what mattered most, and what the team can learn
-from it. Write in the language the user writes in (Chinese headings are shown
+The recap is read aloud at the weekly team meeting. In about two minutes the
+listener should learn what got done, which of it mattered most, and what was
+hard. Write in the language the user writes in (Chinese headings are shown
 here; translate them for other languages).
 
 ## Layout
@@ -10,95 +10,103 @@ here; translate them for other languages).
 ```markdown
 # 周报 (START ~ END)
 
-## 本周重点
-
-- 1–3 lines: the outcomes you would say first if you had 20 seconds
-
 ## <repo name>
 
-- 工作项：结果（链接）
-  - 补充：关键做法或影响
+- **重要工作项**（状态）：做成了什么，对用户或业务的作用
+  - 补充：关键做法或经验，一句话
+- 次要工作项：结果
+- 其他：小改动 A；小改动 B；小改动 C
 
 ## <next repo name>
 
 - …
 
-## 攻克点
+## 难点与经验
 
-- **问题**：原因 → 做法 → 结果（链接）
-
-## 踩坑与经验
-
-- **坑**：发生了什么 → 原因 → 以后怎么避免（链接）
+- **问题**：现象 → 原因 → 做法 → 结果或以后怎么避免
 ```
 
-- `本周重点` is always first. It names outcomes, not repos ("新版结算页上线，下单流程从 4 步减到 2 步"),
-  and may repeat an item from a repo section in summary form.
-- One `##` section per repo with work in the range, ordered by importance.
-  Leave out repos with nothing worth saying.
-- `攻克点` and `踩坑与经验` are optional. Include an item only when the commits or
-  the user's answers support it; omit the whole section when empty. Never write
-  "无".
+- No summary section at the top. Importance is shown by order and bold inside
+  each repo section, so nothing is said twice.
+- One `##` section per repo with work in the range, the repo with the most
+  important work first. Leave out repos with nothing worth saying.
+- Inside a repo, order items by importance, not by date or commit order.
 - No "next week" section: plans are not known from git.
-
-## Budget
-
-- Whole recap: about 25 lines or fewer.
-- Per repo: at most 5 main items. Merge or drop the rest.
-- Per main item: at most 2 sub-items, each one short clause.
-- `攻克点` and `踩坑与经验`: at most 2 items each, one or two lines per item.
 
 ## Main items
 
-- Shape: `<what was delivered>：<result or value>（link）`. Start with a verb or a
-  feature name; end with what it changes for users, the business or the team.
-  - Good: `上线优惠券叠加规则：结算时自动选出最优组合（[#128](…)）`
+- Outcome first: what now works, for whom, and why it matters; then how, only
+  if it helps. Answer "so what?".
+  - Good: `**优惠券叠加**：结算时自动选出最优组合，不可叠加的券给出原因`
   - Weak: `修改 coupon 相关代码`、`优化优惠券`
 - One work item per feature or problem, however many commits it took.
-- Keep numbers that commits support (event counts, entry points, pages,
-  removed lines for a cleanup). Do not invent metrics such as "性能提升 30%".
-- Prefer the business view over code names. Keep a technical term only when the
-  team would use it in the meeting (e.g. Redis, OAuth, Safari).
+- Keep numbers the commits state (entry points, steps, seconds, pages, events).
+  Never invent metrics such as "性能提升 30%".
+- Business language over code names. Keep a technical term only when the team
+  would say it in the meeting (Google One Tap, Stripe, Safari); leave out
+  variable names, env vars, file paths and API internals.
+- At most 2 sub-items per item, each one short clause. Use a sub-item for a
+  lesson worth keeping ("经验：…") when it does not deserve a 难点 entry.
+
+## Minor work
+
+Small fixes, refactors, config and build changes that are real work but not
+worth a line each go into one last item per repo: `其他：A；B；C`, a few words
+each. Do not drop real work to save space; drop only noise (see below).
+
+## Status
+
+Add a status in brackets after the item name only when the pull requests or
+branch names say it plainly, e.g. merged through a test branch → `（已提测）`,
+merged into master or main → `（已合入 master）`, a release tag → `（已上线）`.
+When unsure, write no status. Never guess "已上线".
 
 ## Emphasis
 
-- Bold the single most important phrase of an item: usually its result or a
-  number (`**3 个支付渠道**`, `**退款改为全自动**`).
-- At most one bold phrase per main item, none in most sub-items. If everything is
-  bold, nothing is.
-- In `攻克点` and `踩坑与经验`, bold the problem name at the start of the item.
+- Bold the name of the 1–3 most important items in the whole recap, nothing
+  else in them. Every other item stays plain, so a glance at the bold words
+  gives the week's highlights.
+- In `难点与经验`, bold the problem name at the start of each entry.
+- If everything is bold, nothing is.
 
 ## Links
 
-- Every main item and every `攻克点` / `踩坑与经验` item ends with one link.
-- Prefer the feature pull request; else the most significant commit, shown as
-  its 7-character sha. Omit the link when no URL is available.
-- Link text is short: `[#128](…)` or `[a1b2c3d](…)`. Never paste bare URLs.
+- No links by default: the recap is listened to, and anyone who needs the code
+  finds it in the repository.
+- Only when `style.md` asks for links, end each important item with its feature
+  pull request (`[#128](…)`), or the most significant commit as a 7-character
+  sha. Never paste bare URLs.
 
-## Hard problems and pitfalls
+## 难点与经验 (hard problems and lessons)
 
-Write them as a story the team can learn from, in this order:
+This section is optional and absent in most weeks. Include an entry only for
+work that was genuinely hard or taught something the team should keep:
 
-1. **The symptom** in one phrase, bold.
-2. **The cause**, as the commits or the user explain it.
-3. **What was done.**
-4. **The result**, or for a pitfall, **how to avoid it next time**.
+- a cause that was not obvious and is stated in a commit body or by the user,
+- a problem fixed several times (`repeated_fixes`) or undone (`reverts`),
+- a mistake whose lesson others can reuse.
 
-Example: `- **iOS 上传偶发失败**：上传早于登录态刷新，Safari 带上了过期 token → 上传前先刷新会话 → 不再偶发失败（[#131](…)）`
-
-Candidates come from `signals` (`repeated_fixes`, `reverts`, `explained`) and
-from what the user adds after seeing the recap (SKILL.md step 8). Use only causes
-that a commit body or the user states; without one, say what happened and leave
-the cause out.
+Routine bugs, however many, do not qualify. At most 2 entries. Write each as
+one line: symptom → cause → what was done → result, or for a mistake, how to
+avoid it next time. Use only causes a commit body or the user states; without
+one, leave the entry out rather than guess. When there is no entry, omit the
+whole section; never write "无". Do not repeat an item's detail here and in its
+repo section: keep the item short and tell the story once, here.
 
 ## Drop or merge
 
-Drop unless it is the point of the work: merges, release bumps, formatting,
-lint, typo fixes, debug-log removal, small dependency bumps, small style tweaks,
-doc touch-ups. Merge many small commits on one feature into one item, and several
-related small fixes into one "…问题修复" item.
+Drop: merge commits, release bumps, formatting, lint, typo fixes, debug-log
+removal, small dependency bumps, doc-only touch-ups. Merge many commits on one
+feature into one item, and related small fixes into one "…问题修复" item or the
+`其他` line.
 
-## Before showing the draft
+## Length
 
-Check: every claim traces to a commit or the user's words; each main item has a
-result, at most one bold phrase and a link when available; the budget holds.
+About 20 lines or fewer for a normal week. If it runs longer, merge items or
+move small ones into `其他` before cutting anything that mattered.
+
+## Before saving
+
+Check: every claim traces to a commit or the user's words; items lead with
+outcomes; at most 3 bold item names; statuses only where certain; no links
+unless `style.md` asks; `难点与经验` only for genuinely hard work.

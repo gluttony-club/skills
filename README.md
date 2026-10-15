@@ -70,8 +70,6 @@ pip install skills-ref
 agentskills validate skills/weekly-recap
 ```
 
-在本仓库目录中启动 Claude Code 或 Codex 时，会通过 `.claude/skills` 和 `.agents/skills` 下的符号链接直接加载本地版本，便于调试（Windows 上需开启 git 符号链接支持）。
-
 ## English
 
 Open-source [Agent Skills](https://agentskills.io) by gluttony-club, for Claude Code, Codex and other tools that support the Agent Skills format.
@@ -133,8 +131,6 @@ Say "write my weekly recap for last week", or invoke it: `/weekly-recap:weekly-r
 pip install skills-ref
 agentskills validate skills/weekly-recap
 ```
-
-Starting Claude Code or Codex inside this repository loads the local version through the symlinks in `.claude/skills` and `.agents/skills` (on Windows, enable git symlink support).
 
 ## License
 

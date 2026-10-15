@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Local data for weekly recaps: config, saved recaps, personal style notes.
 
-  store.py add-repo [PATH] [--name NAME]    add a repo to config.json (creates it)
+  store.py add-repo [PATH] [--name NAME]    add a repo to config.json (creates it);
+                                            a taken name becomes "parent/dir"
   store.py list [--latest N]                saved recaps, oldest first
   store.py path --start DATE --end DATE     where the recap for a range is saved
   store.py save --start DATE --end DATE [--input FILE] [--overwrite]
@@ -90,19 +91,25 @@ def cmd_add_repo(args) -> dict:
     top = proc.stdout.strip()
     config = load_config()
     repos = config.setdefault("repos", [])
-    name = args.name or Path(top).name
     for repo in repos:
         if os.path.realpath(os.path.expanduser(repo.get("path", ""))) == os.path.realpath(top):
             return {"added": False, "reason": "already configured", "repo": repo}
-    for repo in repos:
-        if repo.get("name") == name:
-            return {"added": False, "reason": f"name {name!r} is used by another repo; pass --name",
-                    "path": top, "conflict": repo}
+    wanted = args.name or Path(top).name
+    name = unique_name(wanted, Path(top), {r.get("name") for r in repos})
     saved = backup(config_path()) if config_path().exists() else None
     repos.append({"name": name, "path": top})
     write_atomic(config_path(), json.dumps(config, ensure_ascii=False, indent=2) + "\n")
-    return {"added": True, "repo": {"name": name, "path": top}, "config_path": str(config_path()),
-            "backup": str(saved) if saved else None}
+    return {"added": True, "repo": {"name": name, "path": top}, "renamed_from": wanted if name != wanted else None,
+            "config_path": str(config_path()), "backup": str(saved) if saved else None}
+
+
+def unique_name(wanted: str, top: Path, taken: set) -> str:
+    """The wanted name if free, else "parent/dir", else that with a number, so adding never stops to ask."""
+    if wanted not in taken:
+        return wanted
+    base = f"{top.parent.name}/{top.name}"
+    candidates = [base] + [f"{base}-{i}" for i in range(2, 100)]
+    return next(c for c in candidates if c not in taken)
 
 
 def describe_file(path: Path) -> dict | None:

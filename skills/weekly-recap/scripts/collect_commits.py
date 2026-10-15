@@ -2,7 +2,7 @@
 """Collect the user's own git commits across repositories as JSON.
 
   collect_commits.py repos
-      configured repositories, and whether the current directory is one of them
+      configured repositories, most recently committed to first, and the current directory
   collect_commits.py collect --start DATE --end DATE [--repo NAME_OR_PATH ...]
       commits authored in the range, with change sizes, links and clues, per repository
 
@@ -235,18 +235,42 @@ def select_repos(config: dict, wanted: list[str]) -> list[dict]:
     return chosen
 
 
+def last_own_commit(top: Path, config: dict) -> str | None:
+    """Author date of the user's latest commit on any branch, in local time; None if there is none."""
+    authors = identities(top, config, [])
+    if not authors:
+        return None
+    try:
+        raw = run_git(top, "log", "--all", "--no-merges", "-n", "50", "--fixed-strings", "--regexp-ignore-case",
+                      *[f"--author={a}" for a in authors], "--format=%aI%x1f%an%x1f%ae")
+    except InputError:
+        return None
+    wanted = {a.lower() for a in authors}
+    dates = [to_local(iso) for iso, name, email in (line.split("\x1f") for line in raw.splitlines())
+             if name.lower() in wanted or email.lower() in wanted]
+    return max(dates).isoformat(timespec="minutes") if dates else None
+
+
 def cmd_repos(args, config: dict) -> dict:
     repos = []
     for r in config.get("repos", []):
         path = Path(r.get("path", "")).expanduser()
-        repos.append({**r, "ok": path.exists() and git_toplevel(path) is not None})
+        top = git_toplevel(path) if path.exists() else None
+        repos.append({**r, "ok": top is not None, "last_commit_at": last_own_commit(top, config) if top else None})
+    # Most recently committed to first, so the likeliest picks lead the list.
+    repos.sort(key=lambda r: r["last_commit_at"] or "", reverse=True)
     cwd = git_toplevel(Path.cwd())
-    in_config = cwd is not None and any(same_path(r.get("path", ""), cwd) for r in repos)
+    configured = next((r for r in repos if cwd and same_path(r.get("path", ""), cwd)), None)
     return {
         "config_path": str(config_path()),
         "config_exists": config_path().exists(),
         "repos": repos,
-        "current_dir": {"git_repo": str(cwd) if cwd else None, "in_config": in_config},
+        "current_dir": {
+            "git_repo": str(cwd) if cwd else None,
+            "name": (configured or {}).get("name") or (cwd.name if cwd else None),
+            "in_config": configured is not None,
+            "last_commit_at": last_own_commit(cwd, config) if cwd else None,
+        },
     }
 
 

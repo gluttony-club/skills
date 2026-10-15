@@ -9,7 +9,7 @@
     {
       "name": "weekly-recap",
       "description": "Write your weekly meeting recap from your own git commits across repositories: highlights, hard problems, pitfalls and links, saved locally.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "source": "./",
       "strict": false,
       "skills": ["./skills/weekly-recap"],

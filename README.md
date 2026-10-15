@@ -16,7 +16,7 @@ gluttony-club 的开源 [Agent Skills](https://agentskills.io) 合集，同时�
 - 选择时间：本周、上周、指定某周或自定义时间段，按你电脑的本地时区，从起始日 00:00:00 到结束日 23:59:59
 - 跨多个仓库收集**你自己**的提交：覆盖所有分支，按作者时间筛选，自动去重，并统计改动规模
 - 自动生成提交和 PR 链接（支持 GitHub、GitLab、CNB、Gitee、Bitbucket；PR 编号从本地合并记录识别，不联网）
-- 从提交中找出可能的攻克点和踩坑线索，写之前先问你补充细节
+- 从提交中找出可能的攻克点和踩坑线索；看不出原因的不会乱写，生成后你可以随时补充
 - 输出 Markdown 周报：本周重点、各项目进展、攻克点、踩坑与经验，重点加粗、条目带链接
 - 保存到本地，并记住你的仓库和写作偏好，越用越贴合
 
@@ -49,7 +49,7 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 
 直接说"帮我写上周的周报"，或显式调用：Claude Code 中为 `/weekly-recap:weekly-recap`（插件安装）或 `/weekly-recap`（手动安装），Codex 中为 `$weekly-recap`。
 
-首次使用时会问你要包含哪些仓库，并在你同意后记住。
+每次只问两件事：时间范围（本周、上周或自定义）和要包含的仓库（多选，可输入新路径）。选完直接生成并保存，选过的仓库会自动记住，没有提交的仓库自动略过。
 
 ### 更新
 
@@ -91,7 +91,7 @@ Open-source [Agent Skills](https://agentskills.io) by gluttony-club, for Claude 
 - Pick a range: this week, last week, a given week, or a custom period, in your computer's local time zone, from 00:00:00 on the first day to 23:59:59 on the last.
 - Collect **your own** commits across repositories: every branch, filtered by author date, de-duplicated, with change sizes.
 - Link commits and pull requests (GitHub, GitLab, CNB, Gitee, Bitbucket; PR numbers come from local merge commits, no network).
-- Point out likely hard problems and pitfalls, and ask you for the story before writing.
+- Point out likely hard problems and pitfalls without inventing causes; add the story afterwards if you like.
 - Write a Markdown recap: key outcomes, progress per project, hard problems, pitfalls and lessons, with emphasis and links.
 - Save it locally and remember your repositories and writing preferences.
 
@@ -118,7 +118,7 @@ Requires git and Python 3.9+ (standard library only).
 
 ### Use
 
-Say "write my weekly recap for last week", or invoke it: `/weekly-recap:weekly-recap` (Claude Code plugin), `/weekly-recap` (manual install), `$weekly-recap` (Codex). The first run asks which repositories to include and remembers them if you agree.
+Say "write my weekly recap for last week", or invoke it: `/weekly-recap:weekly-recap` (Claude Code plugin), `/weekly-recap` (manual install), `$weekly-recap` (Codex). It asks two things only, the range (this week, last week or your own) and the repositories (pick several or type a new path), then writes and saves the recap. Picked repositories are remembered; ones with no commits are skipped.
 
 ### Update
 

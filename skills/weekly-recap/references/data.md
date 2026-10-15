@@ -45,7 +45,9 @@ macOS or Linux, run the scripts with `TZ=Asia/Tokyo` (for example) to use
 another one.
 
 `store.py add-repo` writes this file (creating it if needed, backing it up
-before changes). Other keys can be edited by hand.
+before changes). The skill adds every repo the user picks, without asking. When
+a name is taken, the new repo is named `parent/dir`, e.g. `work/web`. Other
+keys can be edited by hand.
 
 ## style.md
 

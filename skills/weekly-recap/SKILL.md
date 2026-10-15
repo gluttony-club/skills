@@ -15,54 +15,56 @@ that they can present at the weekly team meeting.
 `<skill-dir>` below is the directory containing this SKILL.md. Scripts need
 Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 
+## Flow
+
+The user answers **one prompt with two questions**, the range and the repos,
+and nothing else before the recap is written and saved. Do not ask anything not listed here:
+no date confirmation, no "remember this repo?", no questions about hard
+problems before writing, no "replace the saved recap?". Skip a question the
+user's request already answers ("上周的周报", "tad_web 的周报").
+
 ## Steps
 
-0. Load context:
+0. Load context, all at once:
 
    ```bash
    python3 <skill-dir>/scripts/store.py list --latest 2
+   python3 <skill-dir>/scripts/date_range.py presets
+   python3 <skill-dir>/scripts/collect_commits.py repos
    ```
 
    If `style_path` is set, read it: these are the user's own preferences and
    override the writing guide. Skim the latest recaps for continuity (ongoing
-   work, the user's wording); do not copy their mistakes.
+   work, the user's wording); do not copy their mistakes. Never compute dates
+   yourself.
 
-1. Choose the date range. Never compute dates yourself; use the script:
+1. Ask the two questions in one prompt. With a multiple-choice tool, put both
+   questions in a single call; without one, ask both in one plain message.
+
+   - **Range** (single choice): this week and last week, each labelled with its
+     dates from `presets` (e.g. "本周 10/12–10/18"). The tool's free-text
+     "Other" takes a custom range or any date; resolve it with
+     `date_range.py period START [END]` or `date_range.py week DATE` and go on
+     without confirming it.
+   - **Repos** (multiple choice): `current_dir` first, labelled as the current
+     directory, then configured repos in the order `repos` lists them (most
+     recently committed to first). If they do not all fit, add an option for
+     "all N remembered repos". "Other" takes a path or a configured name; a
+     path not yet configured is new. Skip `current_dir` when it is not a git
+     repo; with neither a current repo nor a config, ask for paths only.
+
+   Every range is in the user's local time zone (this machine's), from 00:00:00
+   on the first day to 23:59:59 on the last (`start_at`, `end_at`).
+
+2. Remember every picked repo that is not configured yet, the current directory
+   included, without asking:
 
    ```bash
-   python3 <skill-dir>/scripts/date_range.py presets
+   python3 <skill-dir>/scripts/store.py add-repo PATH
    ```
 
-   Offer the user, with the concrete dates from the output:
-   - this week (`this_week`)
-   - last week (`last_week`)
-   - another week: ask for any date in it, then run `date_range.py week DATE`
-   - a custom range, e.g. across a holiday: ask for the start and end dates, then
-     run `date_range.py period START [END]` (END defaults to today)
-
-   Ask for dates in a plain message. If your environment has a multiple-choice
-   prompt, use it only to pick among the options above, never for typing dates.
-   Confirm the resolved `start ~ end` with the user before continuing. Every
-   range is in the user's local time zone (this machine's), from 00:00:00 on the
-   first day to 23:59:59 on the last (`start_at`, `end_at`).
-2. Choose the repositories:
-
-   ```bash
-   python3 <skill-dir>/scripts/collect_commits.py repos
-   ```
-
-   It lists the repos in `~/.weekly-recap/config.json` (`ok: false` means the
-   path is missing or not a git repo) and whether the current directory is a
-   git repo outside the config. Let the user pick some or all, and offer to
-   include the current repo. With no config, use the current repo or paths the
-   user gives.
-
-   Offer to remember a repo for next time, and only if the user agrees run
-   `python3 <skill-dir>/scripts/store.py add-repo [PATH] [--name NAME]` (it
-   creates the config if needed and backs it up before changing it). If it
-   returns `added: false` with a `conflict`, the name is taken: ask the user for
-   another and re-run with `--name`. Config keys are described in
-   [references/data.md](references/data.md).
+   A taken name becomes `parent/dir` (`renamed_from` says so). Config keys are
+   described in [references/data.md](references/data.md).
 
 3. Collect the commits:
 
@@ -71,8 +73,8 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
      [--repo NAME_OR_PATH ...] [--author NAME_OR_EMAIL ...] [--output]
    ```
 
-   - `--repo` takes a configured name or a path and can repeat; without it,
-     every configured repo is used.
+   - Pass each picked repo with `--repo` (a configured name or a path); without
+     it, every configured repo is used.
    - Commits are the user's own (git `user.name` / `user.email` of each repo, or
      `--author`), on every branch, authored within the range, merges excluded.
    - For long ranges add `--output` with no file name: the JSON goes to the
@@ -113,12 +115,9 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
    - `explained`: commits whose body explains why; read these for causes and
      trade-offs.
 
-5. Ask about highlights and pitfalls. Git shows what changed, rarely what was
-   hard or what was learned. From the signals, name 1–3 candidates (e.g. "the
-   upload fixes on Safari look like a hard problem") and ask the user in one
-   message what was hard, the root cause, or the lesson. Accept "skip" and write
-   without them; never invent causes the user did not give and the commits do
-   not show.
+5. Do not stop to ask about highlights or pitfalls. Write what the commits
+   support; for a hard problem or pitfall the signals point at but no commit
+   body explains, give what happened without a cause. Never invent causes.
 
 6. Write the recap in Markdown. Before writing, read
    [references/writing-guide.md](references/writing-guide.md) (layout, budget,
@@ -131,33 +130,34 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
    is the feature branch rather than a release, test or sync branch; without a
    PR use `commit_url`; with neither, no link.
 
-7. Show the draft to the user as Markdown and apply their changes.
-
-8. Save it once the user is happy. Pass the final Markdown on stdin with a
-   quoted heredoc, so no temporary file lands in a repository:
+7. Save it right away, replacing any recap saved for the same range (the old one
+   is kept as `.bak-<time>`). Pass the Markdown on stdin with a quoted heredoc,
+   so no temporary file lands in a repository:
 
    ```bash
-   python3 <skill-dir>/scripts/store.py save --start START --end END <<'RECAP'
+   python3 <skill-dir>/scripts/store.py save --start START --end END --overwrite <<'RECAP'
    # 周报 (START ~ END)
-   …the final Markdown…
+   …the Markdown…
    RECAP
    ```
 
-   If it returns `"exists": true` (exit code 3), a recap for this range is
-   already saved: ask whether to replace it, and only then re-run with
-   `--overwrite` (the old file is kept as `.bak-<time>`). Tell the user the
-   saved `path`.
+   In PowerShell, pipe a here-string instead:
+   `@'…'@ | py -3 <skill-dir>/scripts/store.py save --start START --end END --overwrite`.
 
-9. Learn preferences. If the user's edits in step 7 reflect a lasting
-   preference (wording, emphasis, a section they always drop), ask whether to
-   remember it, and only then append one short line to `style.md` in
-   `data_home` (from step 0), e.g.
+8. Show the recap as Markdown with the saved `path`. Below it, in one line,
+   name any hard problem or pitfall that lacks a cause and say the user can add
+   one; this is not a question and needs no answer. Repos left out for having
+   no commits can be named in the same line.
+
+9. If the user asks for changes, apply them and save again with `--overwrite`.
+   When they state a lasting preference ("以后都…", "always…"), append one
+   short line to `style.md` in `data_home` (from step 0), e.g.
    `printf '%s\n' '- 本周重点最多两条' >> "<data_home>/style.md"`. Never record
-   report content there.
+   report content there, and do not ask whether to remember a one-off edit.
 
 ## Rules
 
-- Only report what the commits and the user's answers support.
+- Only report what the commits and the user's own words support.
 - Describe outcomes, not file edits. No type tags like `[feat]`; hashes only
   as link text.
 - Merge related commits into one item; drop trivial ones.

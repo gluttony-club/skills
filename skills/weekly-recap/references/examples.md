@@ -7,8 +7,8 @@ not as content.
 
 Input, in short: 23 commits in `shop-web` (coupon stacking with 9 commits,
 checkout redesign with 6, four fixes on iOS upload including one revert, plus
-lint and typo commits) and 4 commits in `api-server`. The user answered step 5:
-"the iOS upload thing took two days; Safari sent the old token".
+lint and typo commits) and 4 commits in `api-server`. After the first version,
+the user added: "the iOS upload thing took two days; Safari sent the old token".
 
 ```markdown
 # 周报 (2026-03-02 ~ 2026-03-08)
@@ -80,5 +80,5 @@ Why it works:
 **Invented cause**
 
 - Before: `- **iOS 上传失败**：网络不稳定导致` (no commit or answer says so)
-- After: ask the user in step 5; if they skip, write `- iOS 图片上传问题修复` without
-  a cause.
+- After: write `- iOS 图片上传问题修复` without a cause, and mention below the
+  recap that the user can add one (SKILL.md step 8).

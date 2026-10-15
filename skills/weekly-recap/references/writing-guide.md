@@ -87,8 +87,9 @@ Write them as a story the team can learn from, in this order:
 Example: `- **iOS 上传偶发失败**：上传早于登录态刷新，Safari 带上了过期 token → 上传前先刷新会话 → 不再偶发失败（[#131](…)）`
 
 Candidates come from `signals` (`repeated_fixes`, `reverts`, `explained`) and
-from asking the user (SKILL.md step 5). Use only causes that a commit body or the
-user states.
+from what the user adds after seeing the recap (SKILL.md step 8). Use only causes
+that a commit body or the user states; without one, say what happened and leave
+the cause out.
 
 ## Drop or merge
 

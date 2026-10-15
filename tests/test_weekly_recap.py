@@ -178,14 +178,37 @@ class StoreTest(RepoCase):
                                   encoding="utf-8", env=self.env)
             return json.loads(proc.stdout)
 
-        self.assertTrue(save("# 周报 (2026-10-12 ~ 2026-10-18)\n- v1\n")["saved"])
+        first = save("# 周报 (2026-10-12 ~ 2026-10-18)\n- v1\n")
+        self.assertTrue(first["saved"])
+        self.assertEqual((first["plain_text"], first["copied"]), ("1. v1\n", False))
         refused = save("# 周报 (2026-10-12 ~ 2026-10-18)\n- v2\n")
         self.assertEqual((refused["saved"], refused["exists"]), (False, True))
         replaced = save("# 周报 (2026-10-12 ~ 2026-10-18)\n- v2\n", "--overwrite")
         self.assertTrue(replaced["saved"])
         self.assertIn("v1", Path(replaced["backup"]).read_text(encoding="utf-8"))
         self.assertIn("v2", Path(replaced["path"]).read_text(encoding="utf-8"))
-        self.assertTrue(replaced["path"].endswith(os.path.join("2026", "week-42.md")))
+        self.assertTrue(replaced["path"].endswith(os.path.join("2026", "26.10.12-26.10.18.md")))
+
+    def test_any_range_is_named_by_its_dates(self):
+        for start, end, name in [("2026-10-05", "2026-10-18", os.path.join("2026", "26.10.05-26.10.18.md")),
+                                 ("2026-12-28", "2027-01-03", os.path.join("2026", "26.12.28-27.01.03.md"))]:
+            out = self.run_script("store.py", "path", "--start", start, "--end", end)
+            self.assertTrue(out["path"].endswith(name), out["path"])
+
+    def test_old_week_file_is_listed_and_renamed_on_save(self):
+        old = self.home / "2026" / "week-42.md"
+        old.parent.mkdir(parents=True)
+        old.write_text("# 周报 (2026-10-12 ~ 2026-10-18)\n- v1\n", encoding="utf-8")
+        listed = self.run_script("store.py", "list")["recaps"]
+        self.assertEqual([(r["start"], r["end"]) for r in listed], [("2026-10-12", "2026-10-18")])
+        proc = subprocess.run([sys.executable, str(SCRIPTS / "store.py"), "save", "--start", "2026-10-12",
+                               "--end", "2026-10-18", "--overwrite"], input="# 周报 (2026-10-12 ~ 2026-10-18)\n- v2\n",
+                              capture_output=True, text=True, encoding="utf-8", env=self.env)
+        out = json.loads(proc.stdout)
+        self.assertFalse(old.exists())
+        self.assertTrue(out["path"].endswith("26.10.12-26.10.18.md"))
+        self.assertIn("v1", Path(out["backup"]).read_text(encoding="utf-8"))
+        self.assertEqual(len(self.run_script("store.py", "list")["recaps"]), 1)
 
 
 class PlainTextTest(RepoCase):

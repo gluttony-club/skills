@@ -8,12 +8,15 @@ in `$WEEKLY_RECAP_HOME`).
 ├── config.json
 ├── style.md                          # optional: the user's writing preferences
 └── 2026/
-    ├── week-42.md                    # Monday-to-Sunday recap, ISO year and week
-    └── 2026-09-28_to_2026-10-11.md   # any other range, under its start year
+    ├── 26.10.12-26.10.18.md          # a week
+    └── 26.09.28-26.10.11.md          # any other range, e.g. two weeks
 ```
 
-- Week files use the ISO year and week of the Monday (`2026-12-28 ~ 2027-01-03`
-  is `2026/week-53.md`).
+- Every recap is named by its range as `YY.MM.DD-YY.MM.DD.md`, in the folder of
+  its start year (`2026-12-28 ~ 2027-01-03` is `2026/26.12.28-27.01.03.md`).
+  Sorting by name sorts by date.
+- Files saved before 0.6.0 as `week-42.md` or `2026-09-28_to_2026-10-11.md` are
+  still read, and renamed to the new form the next time that range is saved.
 - The first line of every recap is `# 周报 (YYYY-MM-DD ~ YYYY-MM-DD)` (or another
   title, same date format). `store.py list` reads the range from it.
 - Replacing a recap keeps the old one as `<file>.bak-<YYYYmmddHHMMSS>`. Nothing is

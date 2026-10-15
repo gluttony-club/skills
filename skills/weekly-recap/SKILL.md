@@ -4,7 +4,7 @@ description: Write a weekly recap (周报) from the user's own git commits acros
 license: MIT
 metadata:
   author: gluttony-club
-  version: "0.5.0"
+  version: "0.6.0"
 ---
 
 # Weekly recap
@@ -149,12 +149,14 @@ user's request already answers ("上周的周报", "tad_web 的周报").
    numbered items, `【】` for bold. Leave out `--copy` when `style.md` says not
    to touch the clipboard.
 
-8. Show the recap as Markdown with the saved `path`. Then say in one line that
-   the plain-text version is on the clipboard, ready to paste into a
-   spreadsheet or chat (`copied: true`); when it is not (`copied: false`), show
-   `plain_text` in a fenced `text` block instead, so the user can copy it
-   as-is. `store.py text --start START --end END --copy` produces it again for
-   a saved recap. Below that, in one line,
+8. Show the result as `plain_text` inside a fenced `text` code block, exactly
+   as the script returned it, so the user can copy it with the block's copy
+   button and paste it into a spreadsheet or chat. Do not also show the
+   rendered Markdown: the same content twice is noise. After the block, one
+   line with the saved `path` (the Markdown original) and, when `copied` is
+   true, that the same text is already on the clipboard.
+   `store.py text --start START --end END --copy` produces it again for a
+   saved recap. Below that, in one line,
    name any work that looked hard (repeated fixes, a revert) but has no stated
    cause, and say the user can add the story for `难点与经验`; this is not a
    question and needs no answer. Repos left out for having no commits can be

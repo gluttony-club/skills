@@ -14,8 +14,7 @@ Data lives in $WEEKLY_RECAP_HOME (default ~/.weekly-recap):
 
   config.json              repos, optional author_aliases
   style.md                 the user's own writing preferences (optional)
-  2026/week-42.md          a Monday-to-Sunday recap (ISO year and week)
-  2026/2026-09-28_to_2026-10-11.md   any other range, under its start year
+  2026/26.10.12-26.10.18.md   one recap, named by its range (YY.MM.DD), under its start year
 
 Nothing is ever deleted; replacing a recap keeps a .bak copy beside it.
 Uses only the Python standard library (3.9+).
@@ -39,6 +38,8 @@ import plain  # noqa: E402
 from date_range import InputError, describe, parse_date  # noqa: E402
 
 TITLE = re.compile(r"^#\s*[^(（]*[(（]\s*(\d{4}-\d{2}-\d{2})\s*~\s*(\d{4}-\d{2}-\d{2})\s*[)）]")
+RANGE_FILE = re.compile(r"^(\d{2})\.(\d{2})\.(\d{2})-(\d{2})\.(\d{2})\.(\d{2})\.md$")
+# Names used before 0.6.0, still read and renamed on the next save of the same range.
 WEEK_FILE = re.compile(r"^week-(\d{2})\.md$")
 PERIOD_FILE = re.compile(r"^(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})\.md$")
 
@@ -82,10 +83,26 @@ def backup(path: Path) -> Path:
 
 
 def recap_path(start: str, end: str) -> tuple[Path, dict]:
-    rng = describe(parse_date(start), parse_date(end))
+    """<start year>/YY.MM.DD-YY.MM.DD.md, e.g. 2026/26.10.12-26.10.18.md, for any range."""
+    first, last = parse_date(start), parse_date(end)
+    rng = describe(first, last)
+    return data_home() / str(first.year) / f"{first:%y.%m.%d}-{last:%y.%m.%d}.md", rng
+
+
+def legacy_path(rng: dict) -> Path:
+    """Where a recap for this range was saved before 0.6.0."""
     if rng["kind"] == "week":
-        return data_home() / str(rng["iso_year"]) / f"week-{rng['iso_week']:02d}.md", rng
-    return data_home() / start[:4] / f"{start}_to_{end}.md", rng
+        return data_home() / str(rng["iso_year"]) / f"week-{rng['iso_week']:02d}.md"
+    return data_home() / rng["start"][:4] / f"{rng['start']}_to_{rng['end']}.md"
+
+
+def current_path(start: str, end: str) -> tuple[Path, dict]:
+    """The recap's path, after renaming a file saved under the old name to the new one."""
+    path, rng = recap_path(start, end)
+    old = legacy_path(rng)
+    if not path.exists() and old.exists():
+        os.replace(old, path)
+    return path, rng
 
 
 def cmd_add_repo(args) -> dict:
@@ -117,22 +134,27 @@ def unique_name(wanted: str, top: Path, taken: set) -> str:
 
 
 def describe_file(path: Path) -> dict | None:
-    week, period = WEEK_FILE.match(path.name), PERIOD_FILE.match(path.name)
-    if not (week or period):
+    named, week, period = (RANGE_FILE.match(path.name), WEEK_FILE.match(path.name),
+                           PERIOD_FILE.match(path.name))
+    if not (named or week or period):
         return None
     with path.open(encoding="utf-8", errors="replace") as fh:
         title = TITLE.match(fh.readline().strip())
-    if title:  # the heading is the source of truth for the range
-        start, end = title.groups()
-    elif period:
-        start, end = period.groups()
-    else:
-        try:
+    try:
+        if title:  # the heading is the source of truth for the range
+            start, end = title.groups()
+        elif named:
+            y1, m1, d1, y2, m2, d2 = named.groups()
+            start, end = f"20{y1}-{m1}-{d1}", f"20{y2}-{m2}-{d2}"
+        elif period:
+            start, end = period.groups()
+        else:
             monday = dt.date.fromisocalendar(int(path.parent.name), int(week.group(1)), 1)
-        except ValueError:
-            return None
-        start, end = monday.isoformat(), (monday + dt.timedelta(days=6)).isoformat()
-    return {"path": str(path), "start": start, "end": end, "kind": "week" if week else "period"}
+            start, end = monday.isoformat(), (monday + dt.timedelta(days=6)).isoformat()
+        kind = describe(parse_date(start), parse_date(end))["kind"]
+    except (ValueError, InputError):
+        return None
+    return {"path": str(path), "start": start, "end": end, "kind": kind}
 
 
 def cmd_list(args) -> dict:
@@ -143,6 +165,13 @@ def cmd_list(args) -> dict:
             entry = describe_file(path)
             if entry:
                 recaps.append(entry)
+    # One entry per range: a file under the current name wins over an old-style one.
+    by_range: dict = {}
+    for entry in recaps:
+        key = (entry["start"], entry["end"])
+        if key not in by_range or RANGE_FILE.match(Path(entry["path"]).name):
+            by_range[key] = entry
+    recaps = list(by_range.values())
     recaps.sort(key=lambda r: (r["start"], r["end"]))
     if args.latest:
         recaps = recaps[-args.latest:]
@@ -152,12 +181,12 @@ def cmd_list(args) -> dict:
 
 
 def cmd_path(args) -> dict:
-    path, rng = recap_path(args.start, args.end)
+    path, rng = current_path(args.start, args.end)
     return {"path": str(path), "exists": path.exists(), "range": rng}
 
 
 def cmd_save(args) -> dict:
-    path, rng = recap_path(args.start, args.end)
+    path, rng = current_path(args.start, args.end)
     text = sys.stdin.read() if args.input == "-" else Path(args.input).expanduser().read_text(encoding="utf-8")
     if not text.strip():
         raise InputError("the recap is empty")
@@ -169,18 +198,18 @@ def cmd_save(args) -> dict:
         saved = backup(path)
     write_atomic(path, text if text.endswith("\n") else text + "\n")
     out = {"saved": True, "path": str(path), "range": rng, "backup": str(saved) if saved else None}
-    return {**out, **plain_output(text, args.copy)} if args.copy else out
+    return {**out, **plain_output(text, args.copy)}
 
 
 def plain_output(markdown: str, copy: bool) -> dict:
-    """The plain text, copied when asked; the text itself is returned only if it is not on the clipboard."""
+    """The plain text, which the user is shown to copy, and whether it is also on the clipboard."""
     text = plain.plain_text(markdown)
     tool = plain.copy_to_clipboard(text) if copy else None
-    return {"copied": tool is not None, "clipboard": tool} if tool else {"copied": False, "plain_text": text}
+    return {"plain_text": text, "copied": tool is not None, "clipboard": tool}
 
 
 def cmd_text(args) -> dict:
-    path, _ = recap_path(args.start, args.end)
+    path, _ = current_path(args.start, args.end)
     if not path.exists():
         raise InputError(f"no recap saved for {args.start} ~ {args.end}")
     return {"path": str(path), **plain_output(path.read_text(encoding="utf-8"), args.copy)}

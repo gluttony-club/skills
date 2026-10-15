@@ -1,0 +1,81 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  skills:
+    name: Skill format and marketplace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install skills-ref
+        run: pip install skills-ref==0.1.1
+      - name: Validate every skill
+        run: |
+          for dir in skills/*/; do
+            agentskills validate "$dir"
+          done
+      - name: Check marketplace entries point at real skills
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, re, sys
+          market = json.loads(pathlib.Path(".claude-plugin/marketplace.json").read_text())
+          errors = []
+          listed = set()
+          for plugin in market["plugins"]:
+              for path in plugin.get("skills", []):
+                  skill = pathlib.Path(path) / "SKILL.md"
+                  listed.add(pathlib.Path(path).name)
+                  if not skill.exists():
+                      errors.append(f"{plugin['name']}: {skill} is missing")
+                      continue
+                  version = re.search(r'^\s+version:\s*"?([^"\n]+)"?', skill.read_text(), re.M)
+                  if version and plugin.get("version") and version.group(1) != plugin["version"]:
+                      errors.append(f"{plugin['name']}: marketplace version {plugin['version']} "
+                                    f"!= SKILL.md version {version.group(1)}")
+          for skill_dir in pathlib.Path("skills").iterdir():
+              if skill_dir.is_dir() and skill_dir.name not in listed:
+                  errors.append(f"skills/{skill_dir.name} is not listed in marketplace.json")
+          print("\n".join(errors) or "marketplace OK")
+          sys.exit(1 if errors else 0)
+          PY
+
+  scripts:
+    name: Scripts on Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Compile
+        run: python -m py_compile skills/*/scripts/*.py
+      - name: Smoke test on this repository
+        env:
+          WEEKLY_RECAP_HOME: ${{ runner.temp }}/recap
+        run: |
+          cd skills/weekly-recap/scripts
+          python date_range.py presets
+          python date_range.py week 2026-12-31
+          python collect_commits.py collect --start 2020-01-01 --end 2030-12-31 \
+            --repo "$GITHUB_WORKSPACE" --author "$(git -C "$GITHUB_WORKSPACE" log -1 --format=%ae)" \
+            --output "$RUNNER_TEMP/commits.json"
+          python -c "import json,sys; d=json.load(open(sys.argv[1])); r=d['repos'][0]; \
+          assert r['ok'] and r['commit_count'] > 0, r; print(r['commit_count'], 'commits,', r['forge'])" \
+            "$RUNNER_TEMP/commits.json"
+          printf '# 周报 (2026-10-05 ~ 2026-10-11)\n\n- smoke\n' | python store.py save --start 2026-10-05 --end 2026-10-11
+          python store.py list

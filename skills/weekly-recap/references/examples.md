@@ -132,6 +132,23 @@ from the previous recap. The empty sections are simply absent.
 - Before: `- 【增长】【商业化】优惠券叠加`
 - After: `- **优惠券叠加**（已提测）：结算时自动选出最优组合`
 
+**A serious fix buried in 其他**
+
+- Before: `- 其他：埋点相关查询失败导致下单和商品列表失败；Docker 构建缺少依赖`
+- After: its own item, since ordering failed:
+  ```markdown
+  - **埋点异常导致下单和商品列表失败**
+    - 原因：解析埋点用的商品快照、查询用户最近套餐失败时，会让创建结账和整个商品列表一起失败
+    - 解决：两处改为单独处理，失败时只跳过埋点，不影响下单
+  - 其他：Docker 构建缺少依赖
+  ```
+
+**A catch-all name**
+
+- Before: `- 体验优化（已发布）：背景音乐淡入淡出、离开挽留图预加载、页脚社媒入口`
+- After: `- 播放体验（已发布）：背景音乐淡入淡出，离开挽留图提前加载` and
+  `- 页脚社媒入口（已发布）：补充 5 个社媒入口`
+
 **A claimed status**
 
 - Before: `- 优惠券叠加（已发布）` while its commits are only on the test branch

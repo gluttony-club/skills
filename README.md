@@ -8,7 +8,7 @@ gluttony-club 的开源 [Agent Skills](https://agentskills.io) 合集，同时�
 
 | Skill | 说明 | 状态 |
 | --- | --- | --- |
-| [`weekly-recap`](skills/weekly-recap/SKILL.md) | 从自己的 git 提交生成周报：本周工作（功能、问题修复、进度、团队贡献）和下周计划，用于周会汇报 | v0.7.2 |
+| [`weekly-recap`](skills/weekly-recap/SKILL.md) | 从自己的 git 提交生成周报：本周工作（功能、问题修复、进度、团队贡献）和下周计划，用于周会汇报 | v0.7.3 |
 | `okr-review` | 基于周报和 git 记录撰写 OKR 自评（目标、关键成果、权重、自评分、个人总结），周期可自选（半年 / 一年） | 计划中 |
 
 ### weekly-recap 能做什么
@@ -87,7 +87,7 @@ Open-source [Agent Skills](https://agentskills.io) by gluttony-club, for Claude 
 
 | Skill | Description | Status |
 | --- | --- | --- |
-| [`weekly-recap`](skills/weekly-recap/SKILL.md) | A weekly recap from your own git commits for the team meeting: this week's work (features, fixes, progress, what was left for others) and next week's plan | v0.7.2 |
+| [`weekly-recap`](skills/weekly-recap/SKILL.md) | A weekly recap from your own git commits for the team meeting: this week's work (features, fixes, progress, what was left for others) and next week's plan | v0.7.3 |
 | `okr-review` | An OKR self-review (objectives, key results, weights, self-scores, personal summary) drafted from your weekly recaps and git history, for any review period | Planned |
 
 ### What weekly-recap does

@@ -69,6 +69,11 @@ translate them for other languages).
 
 - One item per feature, however many commits it took: what now works, for
   whom, and why it matters, in business language.
+- Merge only commits that serve the same feature. Never bundle unrelated
+  changes under a catch-all name such as 体验优化, 细节优化 or 若干改进; give each
+  its own item named for what it is (`播放体验：背景音乐淡入淡出`,
+  `页脚社媒入口`). Small unrelated changes that are not worth an item go under
+  其他 in `问题修复` if they fixed something, and are left out otherwise.
   - Good: `**Google One Tap 一键登录**（已发布）：未登录用户可一键用 Google 账号登录，与现有 Google 登录共用账号关联和注册奖励`
   - Weak: `新增 google-one-tap 组件和 /auth/one-tap 接口`
 - No implementation details here (retries, deduplication, env names, file
@@ -79,18 +84,29 @@ translate them for other languages).
 
 ## 问题修复 (bug fixes)
 
-- A fix that took real work, a non-obvious cause, a regression or a fix that
-  protects revenue or data gets its own item: the symptom as the bold name,
-  then `原因：` and `解决：` sub-items, from what a commit body or the user
-  states. This is where the lead sees how someone solves problems.
+- A fix gets its own item, the symptom as the bold name, then `原因：` and
+  `解决：` sub-items from what a commit body or the user states, when any of
+  these holds:
+  - users could not complete something that matters: ordering, payment,
+    sign-up or login, a page or list that failed as a whole, data lost or
+    wrong;
+  - money or reporting was affected: purchases, billing, conversion or
+    analytics events dropped or doubled;
+  - it took real work: a non-obvious cause, several attempts, a revert, or a
+    regression.
+  Judge by the effect described in the commit body, not by how modestly the
+  subject is worded (`keep the product list independent of …` may mean the
+  product list failed). This is where the lead sees how someone solves
+  problems.
 - Add a third sub-item `经验：` only for a lesson that is not obvious and that
   others on the team can apply, stated as a rule; never one that restates the
   cause or the fix.
 - Without a stated cause, write the symptom and that it is fixed; never guess
   a cause.
-- Routine fixes share one `其他：A；B` line, a few words each, and so do small
-  refactors or configuration changes worth a mention, described by their
-  effect (`非 HTTPS 页面请求出错`), not by the code change.
+- Only fixes with a small effect share one `其他：A；B` line, a few words each,
+  and so do small refactors or configuration changes worth a mention,
+  described by their effect (`非 HTTPS 页面请求出错`), not by the code change.
+  Before saving, check that nothing in 其他 meets the conditions above.
 
 ## 团队贡献 (team contribution)
 

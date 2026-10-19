@@ -4,7 +4,7 @@ description: Write a weekly recap (周报) from the user's own git commits acros
 license: MIT
 metadata:
   author: gluttony-club
-  version: "0.7.2"
+  version: "0.7.3"
 ---
 
 # Weekly recap
@@ -204,8 +204,10 @@ no "fetch?". Skip a question the user's request already answers ("上周的周�
    `store.py text --start START --end END --copy` produces it again for a
    saved recap. Below that, in one line: repos that could not be fetched
    (their statuses may be behind), work that looked hard (repeated fixes, a
-   revert) but has no stated cause, which the user can add, and repos left
-   out for having no commits. This line is not a question and needs no answer.
+   revert) but has no stated cause, which the user can add, repos left out for
+   having no commits, and, when `下周计划` holds only follow-ups drawn from work
+   in progress, that the user can tell their own plans for next week to add
+   them. This line is not a question and needs no answer.
 
 9. If the user asks for changes, apply them and save again with `--overwrite --copy`.
    When they state a lasting preference ("以后都…", "always…"), append one

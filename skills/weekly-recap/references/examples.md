@@ -125,7 +125,13 @@ from the previous recap. The empty sections are simply absent.
 - Before: a `技术沉淀` section with `请求 ID 生成抽成公共方法`, `上报地址改为配置项`
   and a lesson that repeats a fix above
 - After: no such section. The first goes under 其他 as the problem it fixed
-  (`非 HTTPS 页面请求出错`), the second is left out, the lesson is dropped.
+  (`用 http 地址访问时创建故事报错`), the second is left out, the lesson is dropped.
+
+**Shorthand in 其他**
+
+- Before: `- 其他：非 HTTPS 页面请求出错；Docker 构建缺少依赖`
+- After: `- 其他：用 http 地址访问时创建故事报错；加入埋点共享包后 Docker 镜像构建失败`
+  (which feature, in what situation, what went wrong)
 
 **Value labels**
 

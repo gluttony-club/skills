@@ -103,10 +103,14 @@ translate them for other languages).
   cause or the fix.
 - Without a stated cause, write the symptom and that it is fixed; never guess
   a cause.
-- Only fixes with a small effect share one `其他：A；B` line, a few words each,
-  and so do small refactors or configuration changes worth a mention,
-  described by their effect (`非 HTTPS 页面请求出错`), not by the code change.
-  Before saving, check that nothing in 其他 meets the conditions above.
+- Only fixes with a small effect share one `其他：A；B` line, and so do small
+  refactors or configuration changes worth a mention. Each entry must tell a
+  teammate who does not know the code which feature broke, when, and how, in
+  one short clause: `用 http 地址访问时创建故事报错`, `加入埋点共享包后 Docker 镜像构建失败`.
+  Not `非 HTTPS 页面请求出错` or `Docker 构建缺少依赖`: they name the fault
+  without the feature or the situation. Read the commit body to find both; an
+  entry that cannot be said that way is left out. Before saving, check that
+  nothing in 其他 meets the conditions above.
 
 ## 团队贡献 (team contribution)
 

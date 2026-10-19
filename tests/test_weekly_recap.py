@@ -329,6 +329,10 @@ class PlainTextTest(RepoCase):
         self.assertEqual(plain.plain_text(md), "本周工作\n一、web\n（一）功能交付\n1. 【A】（已发布）：a\n（二）问题修复\n"
                                                 "1. b\n\n二、api\n1. c（已提测）\n\n下周计划\n1. 推动 c 上线\n")
 
+    def test_an_other_line_with_a_status_is_split_too(self):
+        out = plain.plain_text("## web\n\n- 其他（已发布）：A 无法进入；B 报错\n")
+        self.assertEqual(out, "一、web\n1. 其他（已发布）\n   - A 无法进入\n   - B 报错\n")
+
     def test_an_older_one_line_other_item_is_split(self):
         out = plain.plain_text("## web\n\n- 首页改版\n- 其他：配置改为按环境读取；修复空状态文案\n")
         self.assertEqual(out, "一、web\n1. 首页改版\n2. 其他\n   - 配置改为按环境读取\n   - 修复空状态文案\n")

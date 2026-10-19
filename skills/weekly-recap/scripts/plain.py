@@ -21,8 +21,8 @@ import sys
 HEADING = re.compile(r"^#{1,6}\s+(.*)$")
 ITEM = re.compile(r"^(\s*)(?:[-*+]|\d+[.)])\s+(.*)$")
 RULE = re.compile(r"^\s*([-*_])(\s*\1){2,}\s*$")
-# An older "其他：A；B；C" line, split into one sub-item per change.
-OTHER_LINE = re.compile(r"^(其他|Other)\s*[：:]\s*(.+)$", re.I)
+# A one-line "其他：A；B；C" (or "其他（已发布）：…"), split into one sub-item per change.
+OTHER_LINE = re.compile(r"^((?:其他|Other)\s*(?:（[^）]*）|\([^)]*\))?)\s*[：:]\s*(.+)$", re.I)
 NUMERALS = "一二三四五六七八九十"
 
 

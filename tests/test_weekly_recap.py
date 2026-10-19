@@ -160,6 +160,66 @@ class CollectTest(RepoCase):
         self.assertTrue(out["current_dir"]["in_config"])
 
 
+@unittest.skipUnless(POSIX_TZ, "TZ selects a zone only on POSIX")
+class ProgressTest(RepoCase):
+    def with_remote(self):
+        """A repo with an origin holding master and test; returns (repo, remote)."""
+        remote = self.tmp / "remote.git"
+        subprocess.run(["git", "init", "-q", "--bare", "-b", "master", str(remote)], check=True)
+        repo = self.repo("web")
+        self.git(repo, "remote", "add", "origin", str(remote))
+        self.commit(repo, "chore: base", "2026-10-01T10:00:00+08:00")
+        self.git(repo, "push", "-q", "origin", "main:master")
+        return repo, remote
+
+    def collected(self, repo, *extra):
+        out = self.collect("2026-10-12", "2026-10-18", str(repo), tz="Asia/Shanghai", extra=list(extra))
+        return out["repos"][0], {c["subject"]: c["status"] for c in out["repos"][0]["commits"]}
+
+    def test_status_follows_the_remote_branches_after_a_fetch(self):
+        repo, remote = self.with_remote()
+        self.commit(repo, "feat: shipped", "2026-10-13T10:00:00+08:00")
+        self.git(repo, "push", "-q", "origin", "main:master")
+        self.commit(repo, "feat: in test", "2026-10-14T10:00:00+08:00")
+        self.git(repo, "push", "-q", "origin", "main:test")
+        self.commit(repo, "feat: local only", "2026-10-15T10:00:00+08:00")
+        info, status = self.collected(repo)
+        self.assertTrue(info["fetched"])
+        self.assertEqual(status, {"feat: shipped": "已合入 master", "feat: in test": "已提测",
+                                  "feat: local only": None})
+
+    def test_a_merge_done_elsewhere_is_seen_only_after_fetching(self):
+        repo, remote = self.with_remote()
+        self.commit(repo, "feat: coupon", "2026-10-13T10:00:00+08:00")
+        self.git(repo, "push", "-q", "origin", "main:test")
+        other = self.tmp / "other"
+        subprocess.run(["git", "clone", "-q", str(remote), str(other)], check=True, capture_output=True)
+        self.git(other, "fetch", "-q", "origin", "test")
+        self.git(other, "push", "-q", "origin", "origin/test:master")  # merged on the server
+        _, stale = self.collected(repo, "--no-fetch")
+        self.assertEqual(stale["feat: coupon"], "已提测")
+        _, fresh = self.collected(repo)
+        self.assertEqual(fresh["feat: coupon"], "已合入 master")
+
+    def test_an_unreachable_remote_falls_back_to_local_history(self):
+        repo = self.repo("web")
+        self.git(repo, "remote", "add", "origin", str(self.tmp / "missing.git"))
+        self.commit(repo, "feat: a", "2026-10-13T10:00:00+08:00")
+        info, status = self.collected(repo)
+        self.assertFalse(info["fetched"])
+        self.assertTrue(info["fetch_error"])
+        self.assertEqual(status, {"feat: a": None})
+
+    def test_team_branch_names_from_config(self):
+        repo, remote = self.with_remote()
+        self.commit(repo, "feat: a", "2026-10-13T10:00:00+08:00")
+        self.git(repo, "push", "-q", "origin", "main:develop")
+        self.home.mkdir(exist_ok=True)
+        (self.home / "config.json").write_text(json.dumps({"status_branches": {"develop": "已联调"}}))
+        _, status = self.collected(repo)
+        self.assertEqual(status["feat: a"], "已联调")
+
+
 class StoreTest(RepoCase):
     def test_add_repo_renames_a_taken_name_instead_of_failing(self):
         first, second = self.repo("web", parent="work"), self.repo("web", parent="personal")
@@ -170,6 +230,18 @@ class StoreTest(RepoCase):
         self.assertEqual(out["renamed_from"], "web")
         again = self.run_script("store.py", "add-repo", str(first))
         self.assertEqual((again["added"], again["reason"]), (False, "already configured"))
+
+    def test_plan_reads_the_previous_recaps_next_week(self):
+        def save(start, end, text):
+            subprocess.run([sys.executable, str(SCRIPTS / "store.py"), "save", "--start", start, "--end", end],
+                           input=text, capture_output=True, text=True, encoding="utf-8", env=self.env, check=True)
+        save("2026-10-05", "2026-10-11", "# 周报 (2026-10-05 ~ 2026-10-11)\n\n## 本周工作\n\n- x\n\n"
+                                         "## 下周计划\n\n- **推动** 优惠券上线\n  - 核对金额\n- 开发积分抵扣\n")
+        save("2026-10-12", "2026-10-18", "# 周报 (2026-10-12 ~ 2026-10-18)\n\n## 本周工作\n\n- y\n")
+        out = self.run_script("store.py", "plan", "--before", "2026-10-12")
+        self.assertEqual(out["items"], ["推动 优惠券上线", "开发积分抵扣"])
+        self.assertEqual(self.run_script("store.py", "plan", "--before", "2026-10-19")["items"], [])
+        self.assertIsNone(self.run_script("store.py", "plan", "--before", "2026-10-01")["path"])
 
     def test_save_overwrite_keeps_a_backup(self):
         def save(text: str, *extra: str) -> dict:
@@ -244,6 +316,12 @@ class PlainTextTest(RepoCase):
             "1. 【iOS 上传偶发失败】：一周内反复出现\n"
             "   - 原因：上传早于登录态刷新\n"
             "   - 解决：先刷新会话\n"))
+
+    def test_two_heading_levels_keep_the_parts_plain_and_number_the_sections(self):
+        md = ("# 周报 (2026-10-12 ~ 2026-10-18)\n\n## 本周工作\n\n### 功能交付\n\n- **A**（已提测）：a\n"
+              "\n### 问题修复\n\n- b\n\n## 下周计划\n\n- 推动 A 上线\n")
+        self.assertEqual(plain.plain_text(md), "本周工作\n一、功能交付\n1. 【A】（已提测）：a\n\n二、问题修复\n1. b\n"
+                                                "\n下周计划\n1. 推动 A 上线\n")
 
     def test_an_older_one_line_other_item_is_split(self):
         out = plain.plain_text("## web\n\n- 首页改版\n- 其他：配置改为按环境读取；修复空状态文案\n")

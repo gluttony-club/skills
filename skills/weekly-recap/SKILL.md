@@ -1,16 +1,17 @@
 ---
 name: weekly-recap
-description: Write a weekly recap (周报) from the user's own git commits across their repositories, to present at the weekly team meeting what they did, what mattered most and what was hard. Use when the user asks for a weekly report or recap, 周报, 写周报, 周会汇报, or what they did this week or last week.
+description: Write a weekly recap (周报) from the user's own git commits across their repositories, for the weekly team meeting - this week's work (features, hard bug fixes, progress, what was left for others) and next week's plan. Use when the user asks for a weekly report or recap, 周报, 写周报, 周会汇报, or what they did this week or last week.
 license: MIT
 metadata:
   author: gluttony-club
-  version: "0.6.1"
+  version: "0.7.0"
 ---
 
 # Weekly recap
 
-Turn the user's git commits from one week into a short recap, grouped by project,
-that they can present at the weekly team meeting.
+Turn the user's git commits from one week into a plain, true recap in two
+parts, `本周工作` and `下周计划`, that they present at the weekly team meeting
+and later reread for their year-end review.
 
 `<skill-dir>` below is the directory containing this SKILL.md. Scripts need
 Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
@@ -18,16 +19,17 @@ Python 3.9+ (`python3`; on Windows `py -3`) and print JSON.
 ## Flow
 
 Every request for a recap runs the whole flow from step 0, including a second
-or third request in the same conversation: ask the range and the repos again
-and never reuse an earlier answer, unless the new request itself names them.
+or third request in the same conversation: ask again and never reuse an
+earlier answer, unless the new request itself names the range or the repos.
 
-The user answers **one prompt with two questions**, the range and the repos,
-and nothing else before the recap is written and saved. The only exception is
-a repo typed in as a new path (step 2), after which the repo question is asked
-again, as often as the user keeps adding paths. Do not ask anything not listed
-here: no date confirmation, no "remember this repo?", no questions about hard
-problems before writing, no "replace the saved recap?". Skip a question the
-user's request already answers ("上周的周报", "tad_web 的周报").
+The user answers **one prompt with three questions**, the range, the repos and
+an optional note for next week, and nothing else before the recap is written
+and saved. The only exception is a repo typed in as a new path (step 2), after
+which the repo question is asked again, as often as the user keeps adding
+paths. Do not ask anything not listed here: no date confirmation, no "remember
+this repo?", no questions about hard problems, no "replace the saved recap?",
+no "fetch?". Skip a question the user's request already answers ("上周的周报",
+"tad_web 的周报", "下周做积分抵扣").
 
 ## Steps
 
@@ -44,8 +46,8 @@ user's request already answers ("上周的周报", "tad_web 的周报").
    work, the user's wording); do not copy their mistakes. Never compute dates
    yourself.
 
-1. Ask the two questions in one prompt. With a multiple-choice tool, put both
-   questions in a single call; without one, ask both in one plain message.
+1. Ask the three questions in one prompt. With a multiple-choice tool, put all
+   of them in a single call; without one, ask them in one plain message.
 
    - **Range** (single choice): this week and last week, each labelled with its
      dates from `presets` (e.g. "本周 10/12–10/18"). The tool's free-text
@@ -56,10 +58,20 @@ user's request already answers ("上周的周报", "tad_web 的周报").
      directory, then configured repos in the order `repos` lists them (most
      recently committed to first), leaving out the configured repo that is the
      current directory (`in_config: true`) so it is listed once. If they do
-     not all fit, add an option for "all N remembered repos". "Other" takes a
-     path or a configured name; a path not yet configured is new. Skip
-     `current_dir` when it is not a git repo; with neither a current repo nor a
-     config, ask for paths only.
+     not all fit, add an option for "all N remembered repos". "Other" takes
+     paths or configured names. Skip `current_dir` when it is not a git repo;
+     with neither a current repo nor a config, ask for paths only.
+
+     When the tool allows only one choice per question (Codex, for one), offer
+     sets instead of single repos: the repos with a `last_commit_at` in the
+     last 14 days (name them in the label), all N remembered repos, and the
+     current directory alone; "Other" takes several names or paths separated
+     by commas. Repos without commits are skipped later anyway, so the larger
+     sets cost nothing.
+   - **Next week** (single choice, optional): "根据进行中的工作拟定下周计划"
+     (first, the default) and "不写下周计划". "Other" takes the user's own plans
+     for next week and anything else worth reporting that git cannot show,
+     such as helping a colleague, a talk or reviews.
 
    Every range is in the user's local time zone (this machine's), from 00:00:00
    on the first day to 23:59:59 on the last (`start_at`, `end_at`).
@@ -85,20 +97,30 @@ user's request already answers ("上周的周报", "tad_web 的周报").
    first answer that adds none is the selection. When the new paths are the
    only repos there are, go on without asking again.
 
-3. Collect the commits:
+3. Collect the commits, and last week's plan:
 
    ```bash
    python3 <skill-dir>/scripts/collect_commits.py collect --start START --end END \
      [--repo NAME_OR_PATH ...] [--author NAME_OR_EMAIL ...] [--output]
+   python3 <skill-dir>/scripts/store.py plan --before START
    ```
 
    - Pass each picked repo with `--repo` (a configured name or a path); without
      it, every configured repo is used.
    - Commits are the user's own (git `user.name` / `user.email` of each repo, or
      `--author`), on every branch, authored within the range, merges excluded.
+   - The script first fetches each repo's remotes, without asking: `git fetch`
+     only updates remote-tracking branches such as origin/master, never local
+     branches or files, and it never waits for a password. This brings in
+     merges done on the web, so each commit's `status` (`已合入 master`,
+     `已预发布`, `已提测`, or null while in progress) is current. A repo with
+     `fetched: false` uses local history; its `fetch_error` goes in the note
+     under the recap. `"fetch": false` in config.json turns fetching off.
    - For long ranges add `--output` with no file name: the JSON goes to the
      system temp directory, never into a repository, and `written` gives the
      path to read.
+   - `plan` returns the `items` of the `下周计划` in the latest recap that ends
+     before START, for `上周计划完成情况`; empty when there is none.
 
    Then check each repo in the output:
    - `ok: false`: tell the user the `error` and carry on with the others.
@@ -109,16 +131,12 @@ user's request already answers ("上周的周报", "tad_web 的周报").
      question or offer other repos, ranges or next steps; the user chose them
      already and will ask again if something was wrong.
 
-   Do not fetch or ask about fetching: the user's own commits are already in
-   local history. Only if the user says work is missing (made on another
-   machine, in the cloud, or squash-merged on the web), offer
-   `git -C <path> fetch --all --prune`, run it once they agree, and collect again.
-
 4. Judge what matters. `size` is `large` (>5 files or >100 lines), `medium`, or
    `small` (≤2 files and <20 lines); lock files and build output are not counted.
-   `trivial_hints` flags subjects like merge, typo, format, deps, wip. Read the
-   subject and body to understand each commit; for a large commit whose purpose
-   is unclear, look at `git -C <path> show --stat <sha>`.
+   Size helps judge importance only; never report it. `trivial_hints` flags
+   subjects like merge, typo, format, deps, wip. Read the subject and body to
+   understand each commit; for a large commit whose purpose is unclear, look at
+   `git -C <path> show --stat <sha>`.
 
    Watch for squash merges done on the web: a subject ending in `(#N)` with a
    PR whose `merged_at` is null. While its feature branch still exists, the same
@@ -131,19 +149,23 @@ user's request already answers ("上周的周报", "tad_web 的周报").
    - `repeated_fixes`: files hit by several commits including two or more fixes,
      a sign of a hard problem.
    - `reverts`: work that was undone, often a lesson.
-   - `explained`: commits whose body explains why; read these for causes and
-     trade-offs.
+   - `explained`: commits whose body explains why; read these for causes,
+     trade-offs and lessons.
 
-5. Do not stop to ask what was hard. Write what the commits support. A hard
-   problem goes into `难点与经验` only when a commit body states its cause;
-   otherwise its fix is an ordinary item. Never invent causes.
+   Sort each work item into `功能交付`, `问题修复`, `技术沉淀` (shared helpers,
+   configuration instead of hard-coded values, removed duplication, build or
+   release guards, conventions) or `团队贡献`.
+
+5. Do not stop to ask what was hard. Write what the commits and the user's
+   note support. A cause goes into `问题修复` only when a commit body or the
+   user states it. Never invent causes, contributions or plans.
 
 6. Write the recap in Markdown. Before writing, read
-   [references/writing-guide.md](references/writing-guide.md) (layout, order,
-   emphasis, status, hard problems, length) and
+   [references/writing-guide.md](references/writing-guide.md) (the two parts,
+   each section, status, what never to write, length) and
    [references/examples.md](references/examples.md) (full examples and
    before/after pairs). The title is `# 周报 (START ~ END)` with the range from
-   step 1; each repo section is named by its `name`.
+   step 1, then `## 本周工作` with its `###` sections and `## 下周计划`.
 
    No links unless `style.md` asks for them. Then, when a commit has several
    `prs`, use the one whose `from_branch` is the feature branch rather than a
@@ -165,6 +187,7 @@ user's request already answers ("上周的周报", "tad_web 的周报").
    `@'…'@ | py -3 <skill-dir>/scripts/store.py save --start START --end END --overwrite --copy`.
 
    The plain-text form is what a spreadsheet cell or a chat box keeps: no title,
+   `本周工作` and `下周计划` as plain lines, `一、` for the sections under them,
    numbered items, `【】` for bold. Leave out `--copy` when `style.md` says not
    to touch the clipboard.
 
@@ -175,10 +198,10 @@ user's request already answers ("上周的周报", "tad_web 的周报").
    line with the saved `path` (the Markdown original) and, when `copied` is
    true, that the same text is already on the clipboard.
    `store.py text --start START --end END --copy` produces it again for a
-   saved recap. Below that, in one line, name any work that looked hard
-   (repeated fixes, a revert) but has no stated cause, and say the user can add
-   the story for `难点与经验`; this is not a question and needs no answer. Repos
-   left out for having no commits can be named in the same line.
+   saved recap. Below that, in one line: repos that could not be fetched
+   (their statuses may be behind), work that looked hard (repeated fixes, a
+   revert) but has no stated cause, which the user can add, and repos left
+   out for having no commits. This line is not a question and needs no answer.
 
 9. If the user asks for changes, apply them and save again with `--overwrite --copy`.
    When they state a lasting preference ("以后都…", "always…"), append one
@@ -188,6 +211,9 @@ user's request already answers ("上周的周报", "tad_web 的周报").
 
 ## Rules
 
-- Only report what the commits and the user's own words support.
-- Describe outcomes, not file edits. No type tags like `[feat]`, no hashes.
+- Plain and true: only what the commits and the user's own words support,
+  nothing dressed up for the lead or the year-end review.
+- Describe outcomes, not file edits. No workload numbers (lines, tests,
+  commits, files), no inflated words, no value labels, no type tags like
+  `[feat]`, no hashes.
 - Merge related commits into one item; drop trivial ones.

@@ -1,121 +1,153 @@
 # Writing guide
 
-The recap is read aloud at the weekly team meeting. In about two minutes the
-listener should learn what got done, which of it mattered most, and what was
-hard. Write in the language the user writes in (Chinese headings are shown
-here; translate them for other languages).
+A recap has three readers. The team hears it at the weekly meeting and should
+learn in about two minutes what got done and what comes next. The lead reads
+what was delivered, how far it got, which hard problems were solved and what
+was left behind for others. At the end of the year the user reads dozens of
+them to write a review. Serve all three by being plain and true: what was
+done, how far it got, what was hard, what others can reuse. Never dress it up.
+Write in the language the user writes in (Chinese headings are shown here;
+translate them for other languages).
 
 ## Layout
 
 ```markdown
 # 周报 (START ~ END)
 
-## <repo name>
+## 本周工作
 
-- **重要工作项**（状态）：做成了什么，对用户或业务的作用
-  - 补充：关键做法或经验，一句话
-- 次要工作项：结果
-- 其他
-  - 小改动 A
-  - 小改动 B
+### 上周计划完成情况
 
-## <next repo name>
+- 上周计划的事：已完成（已合入 master）
 
-- …
+### 功能交付
 
-## 难点与经验
+- **重要功能**（仓库，状态）：做成了什么，对用户或业务有什么用
+  - 范围或影响，一句话
+- 次要功能（仓库，状态）：做成了什么
 
-- **问题**：现象，一句话
+### 问题修复
+
+- **有难度的问题**（仓库）：现象
   - 原因：…
-  - 解决：… → 结果，或以后怎么避免
+  - 解决：…
+- 其他：小问题 A；小问题 B
+
+### 技术沉淀
+
+- 留下的可复用的东西（仓库）：是什么，哪里能用上
+- 经验：一句以后能直接用的结论
+
+### 团队贡献
+
+- 对团队有用的事
+
+## 下周计划
+
+- 做什么：想达到的结果
 ```
 
-Every point that is read on its own gets its own line, so the recap stays
-readable when pasted as plain text into a spreadsheet cell or a chat.
+- `本周工作` and `下周计划` are always the two parts, whatever day the meeting
+  is held.
+- A section appears only with content. `功能交付` and `问题修复` are there most
+  weeks; `技术沉淀`, `团队贡献` and `上周计划完成情况` only when there is
+  something true to put in them. Never write "无".
+- Within a section, the most important item first.
+- Name the repo in the brackets before the status: `（ai-chat-video，已合入
+  master）`. With a single repo in the recap, leave the repo name out.
 
-- No summary section at the top. Importance is shown by order and bold inside
-  each repo section, so nothing is said twice.
-- One `##` section per repo with work in the range, the repo with the most
-  important work first. Leave out repos with nothing worth saying.
-- Inside a repo, order items by importance, not by date or commit order.
-- No "next week" section: plans are not known from git.
+## 功能交付 (features)
 
-## Main items
+- One item per feature, however many commits it took: what now works, for
+  whom, and why it matters, in business language.
+  - Good: `**Google One Tap 一键登录**（已合入 master）：未登录用户可一键用 Google 账号登录，与现有 Google 登录共用账号关联和注册奖励`
+  - Weak: `新增 google-one-tap 组件和 /auth/one-tap 接口`
+- No implementation details here (retries, deduplication, env names, file
+  paths, libraries). They belong nowhere in the recap unless they are the cause
+  of a fixed problem or a reusable piece under `技术沉淀`.
+- A sub-item only for scope or effect that matters to users or the business
+  (`覆盖设置页和积分不足弹窗 2 个入口`), at most one.
 
-- Outcome first: what now works, for whom, and why it matters; then how, only
-  if it helps. Answer "so what?".
-  - Good: `**优惠券叠加**：结算时自动选出最优组合，不可叠加的券给出原因`
-  - Weak: `修改 coupon 相关代码`、`优化优惠券`
-- One work item per feature or problem, however many commits it took.
-- Keep numbers the commits state (entry points, steps, seconds, pages, events).
-  Never invent metrics such as "性能提升 30%".
-- Business language over code names. Keep a technical term only when the team
-  would say it in the meeting (Google One Tap, Stripe, Safari); leave out
-  variable names, env vars, file paths and API internals.
-- At most 2 sub-items per item (the `其他` item excepted), each one short
-  clause. Use a sub-item for a lesson worth keeping ("经验：…") when it does
-  not deserve a 难点 entry.
+## 问题修复 (bug fixes)
 
-## Minor work
+- A fix that took real work, a non-obvious cause, a regression or a fix that
+  protects revenue or data gets its own item: the symptom as the bold name,
+  then `原因：` and `解决：` sub-items, from what a commit body or the user
+  states. This is where the lead sees how someone solves problems.
+- Without a stated cause, write the symptom and that it is fixed; never guess
+  a cause.
+- Routine fixes share one `其他：A；B` line, a few words each.
 
-Small fixes, refactors, config and build changes that are real work but not
-worth a main item go into one last item per repo, `- 其他`, with one sub-item
-each of a few words. Do not drop real work to save space; drop only noise (see
-below).
+## 技术沉淀 (what was left for later)
+
+Things that make the next piece of work easier, taken from the commits: a
+helper or component pulled out for shared use, hard-coded values turned into
+configuration, a duplicated logic made single, a guard added to a build or
+release, a convention or document written down. Say what it is and where it is
+used. Add `经验：` with a lesson worth keeping, stated as a rule someone else can
+follow (`关键埋点不依赖第三方 SDK 的事件，由自己的代码在确定时机上报`), only when a
+commit body or the user supports it. At most three items.
+
+## 团队贡献 (team contribution)
+
+Work that helps others beyond the user's own tasks: code in a shared package
+others use, tooling or CI for the team, documentation, fixing a problem in
+someone else's area, and what the user says (helped a colleague debug, gave a
+talk, reviewed code). Only what the commits or the user show; omit the section
+otherwise. Never infer contribution from volume of work.
+
+## 上周计划完成情况 (last week's plan)
+
+When the previous recap had a `下周计划`, list each planned item once with
+where it stands, judged from this range's commits and statuses: `已完成（状态）`,
+`进行中`, or `未开始`. When nothing in the commits relates to an item, write
+`未看到相关提交` rather than guessing. Keep each to one line; add a reason only
+when the user gave one.
+
+## 下周计划 (next week)
+
+- From the work in progress: features `已提测` or still on a branch become
+  `推动 X 上线` or `完成 X`; a fix waiting for verification becomes `验证 X`.
+- Add what the user wrote for next week, in their words, tidied.
+- Each item: what will be done, and the result wanted; a date only when the
+  user gave one. Do not invent new work.
 
 ## Status
 
-Add a status in brackets after the item name only when the pull requests or
-branch names say it plainly, e.g. merged through a test branch → `（已提测）`,
-merged into master or main → `（已合入 master）`, a release tag → `（已上线）`.
-When unsure, write no status. Never guess "已上线".
+Each commit carries a `status` worked out from the remote branches after a
+fetch: `已合入 master`, `已预发布`, `已提测`, or none while still in progress.
+An item's status is the least advanced status among its commits, so it never
+claims more than is true; with no status write `开发中`. When a repo was not
+fetched (`fetched: false`), its statuses may be behind; say so in the note
+under the recap, not in the item. Never write `已上线` unless the user says so.
 
 ## Emphasis
 
-- Bold the name of the 1–3 most important items in the whole recap, nothing
-  else in them. Every other item stays plain, so a glance at the bold words
-  gives the week's highlights.
-- In `难点与经验`, bold the problem name at the start of each entry.
-- If everything is bold, nothing is.
+Bold the names of the 1–3 items that matter most in the whole recap, in
+`功能交付` or `问题修复`; in `问题修复` the symptom names of hard problems are
+bold too. Nothing else is bold.
 
-## Links
+## Never write
 
-- No links by default: the recap is listened to, and anyone who needs the code
-  finds it in the repository.
-- Only when `style.md` asks for links, end each important item with its feature
-  pull request (`[#128](…)`), or the most significant commit as a 7-character
-  sha. Never paste bare URLs.
-
-## 难点与经验 (hard problems and lessons)
-
-This section is optional and absent in most weeks. Include an entry only for
-work that was genuinely hard or taught something the team should keep:
-
-- a cause that was not obvious and is stated in a commit body or by the user,
-- a problem fixed several times (`repeated_fixes`) or undone (`reverts`),
-- a mistake whose lesson others can reuse.
-
-Routine bugs, however many, do not qualify. At most 2 entries. Write each as
-the bold symptom in a few words, then two sub-items: `原因：…` and
-`解决：… → 结果`; for a mistake, end with how to avoid it next time. Use only causes a commit body or the user states; without
-one, leave the entry out rather than guess. When there is no entry, omit the
-whole section; never write "无". Do not repeat an item's detail here and in its
-repo section: keep the item short and tell the story once, here.
-
-## Drop or merge
-
-Drop: merge commits, release bumps, formatting, lint, typo fixes, debug-log
-removal, small dependency bumps, doc-only touch-ups. Merge many commits on one
-feature into one item, and related small fixes into one "…问题修复" item or
-under `其他`.
+- Workload numbers: lines of code, numbers of tests, commits or files. They
+  measure effort, read as padding, and say nothing about the result.
+- Inflated words: 赋能、打造、极致、全面提升、显著优化, or any improvement
+  without a fact behind it. Never invent metrics ("性能提升 30%").
+- Labels or tags such as 【增长】【商业化】 to sort items by value.
+- Type tags like `[feat]`, commit hashes, or links (unless `style.md` asks for
+  links).
+- Noise: merge commits, release bumps, formatting, lint, typo fixes,
+  debug-log removal, small dependency bumps, doc-only touch-ups.
 
 ## Length
 
-About 20 lines or fewer for a normal week. If it runs longer, merge items or
-move small ones into `其他` before cutting anything that mattered.
+Not terse, not padded: each item one line, two with a sub-item; about 20–30
+lines for a week, a little more for a longer range. When it runs long, merge
+items and move routine fixes into `其他` before cutting anything that mattered.
 
 ## Before saving
 
-Check: every claim traces to a commit or the user's words; items lead with
-outcomes; at most 3 bold item names; statuses only where certain; no links
-unless `style.md` asks; `难点与经验` only for genuinely hard work.
+Check: every claim traces to a commit or the user's words; no workload numbers
+or inflated words; statuses as the script reports them, the least advanced per
+item; at most 3 bold item names; empty sections left out; the plan holds only
+work in progress and the user's own plans.

@@ -8,16 +8,17 @@ gluttony-club 的开源 [Agent Skills](https://agentskills.io) 合集，同时�
 
 | Skill | 说明 | 状态 |
 | --- | --- | --- |
-| [`weekly-recap`](skills/weekly-recap/SKILL.md) | 从自己的 git 提交生成周报：做了什么、哪些最重要、哪些最难，用于周会汇报 | v0.6.1 |
+| [`weekly-recap`](skills/weekly-recap/SKILL.md) | 从自己的 git 提交生成周报：本周工作（功能、问题修复、进度、技术沉淀）和下周计划，用于周会汇报 | v0.7.0 |
 | `okr-review` | 基于周报和 git 记录撰写 OKR 自评（目标、关键成果、权重、自评分、个人总结），周期可自选（半年 / 一年） | 计划中 |
 
 ### weekly-recap 能做什么
 
 - 选择时间：本周、上周、指定某周或自定义时间段，按你电脑的本地时区，从起始日 00:00:00 到结束日 23:59:59
-- 跨多个仓库收集**你自己**的提交：覆盖所有分支，按作者时间筛选，自动去重，并统计改动规模
-- 输出简洁的 Markdown 周报：按项目分组、按重要程度排序，最重要的 1–3 项加粗，小改动逐条列在「其他」下，能从分支看出时标注提测或合入状态
+- 跨多个仓库收集**你自己**的提交：覆盖所有分支，按作者时间筛选，自动去重；先自动拉取远端，网页上做的合并也能算进来
+- 周报分「本周工作」和「下周计划」：本周工作按功能交付、问题修复、技术沉淀、团队贡献整理，并对照上一份周报的下周计划写出完成情况；每项标注进度（已合入 master、已预发布、已提测、开发中），按远程分支实际判断
+- 写法真实朴素：只写提交和你说的内容，不写代码行数、测试数量这类工作量数字，不用夸大的词；最重要的 1–3 项加粗
 - 生成后以带复制按钮的代码框显示纯文本版（编号、缩进、【】代替加粗），同时自动复制到剪贴板，直接粘贴进表格或聊天也不会乱；Markdown 原文保存在本地
-- 真正有难度的问题才写进「难点与经验」，原因只取自提交说明，不会编造；默认不带链接，需要时说一句「周报附上 PR 链接」即可（支持 GitHub、GitLab、CNB、Gitee、Bitbucket，不联网）
+- 有难度的问题写清原因和解法，原因只取自提交说明，不会编造；默认不带链接，需要时说一句「周报附上 PR 链接」即可（支持 GitHub、GitLab、CNB、Gitee、Bitbucket）
 - 保存到本地，并记住你的仓库和写作偏好，越用越贴合
 
 ### 安装
@@ -49,7 +50,7 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 
 直接说"帮我写上周的周报"，或显式调用：Claude Code 中为 `/weekly-recap:weekly-recap`（插件安装）或 `/weekly-recap`（手动安装），Codex 中为 `$weekly-recap`。
 
-每次写周报都会重新问两件事：时间范围（本周、上周或自定义）和要包含的仓库（多选）。在「其他」里输入新仓库路径（可一次填多个，也可分几次添加）后，它们会加入选项让你和其他仓库一起勾选。选完直接生成并保存，选过的仓库会自动记住，没有提交的仓库自动略过。
+每次写周报都会重新问三件事：时间范围（本周、上周或自定义）、要包含的仓库（多选），以及下周计划和其他补充（可不填，默认根据进行中的工作拟定）。在「其他」里输入新仓库路径（可一次填多个，也可分几次添加）后，它们会加入选项让你和其他仓库一起勾选。选完直接生成并保存，选过的仓库会自动记住，没有提交的仓库自动略过。
 
 ### 更新
 
@@ -68,7 +69,7 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 
 ### 数据与隐私
 
-- 脚本只运行本地 `git` 命令，只读写 `~/.weekly-recap/`（可用环境变量 `WEEKLY_RECAP_HOME` 修改）；时间范围较长时，收集到的提交会临时写入系统临时目录（仅你本人可读）。不会上传到任何服务器，也不会自行 `git fetch`（需要时先征得你同意）。
+- 脚本只运行本地 `git` 命令，只读写 `~/.weekly-recap/`（可用环境变量 `WEEKLY_RECAP_HOME` 修改）；时间范围较长时，收集到的提交会临时写入系统临时目录（仅你本人可读）。不会上传到任何服务器。收集前会对所选仓库执行 `git fetch`，只更新 origin/master 这类远程分支记录，不改动你的本地分支和文件，也不会弹出密码输入；不想拉取可在配置里设置 `"fetch": false`。
 - 周报草稿由你所使用的 AI 工具生成：提交标题、正文、文件路径和改动统计会作为对话内容发送给该工具的模型服务商，与你平时在对话中粘贴代码相同。涉及敏感仓库时请留意。
 - 目录结构与配置项见 [references/data.md](skills/weekly-recap/references/data.md)。
 
@@ -86,16 +87,17 @@ Open-source [Agent Skills](https://agentskills.io) by gluttony-club, for Claude 
 
 | Skill | Description | Status |
 | --- | --- | --- |
-| [`weekly-recap`](skills/weekly-recap/SKILL.md) | A weekly recap from your own git commits for the team meeting: what you did, what mattered most, what was hard | v0.6.1 |
+| [`weekly-recap`](skills/weekly-recap/SKILL.md) | A weekly recap from your own git commits for the team meeting: this week's work (features, fixes, progress, what was left for others) and next week's plan | v0.7.0 |
 | `okr-review` | An OKR self-review (objectives, key results, weights, self-scores, personal summary) drafted from your weekly recaps and git history, for any review period | Planned |
 
 ### What weekly-recap does
 
 - Pick a range: this week, last week, a given week, or a custom period, in your computer's local time zone, from 00:00:00 on the first day to 23:59:59 on the last.
-- Collect **your own** commits across repositories: every branch, filtered by author date, de-duplicated, with change sizes.
-- Write a short Markdown recap: grouped by project, ordered by importance, the 1–3 most important items in bold, small changes listed under "other", and a status where branches show it.
+- Collect **your own** commits across repositories: every branch, filtered by author date, de-duplicated; remotes are fetched first so merges done on the web count.
+- Two parts, this week's work and next week's plan. This week is sorted into features, bug fixes, things left for later and team contribution, follows up the previous recap's plan, and marks each item's progress (merged, pre-release, in test, in progress) from the remote branches.
+- Plain and true: only what the commits and you say, no lines of code or test counts, no inflated words; the 1–3 most important items in bold.
 - The recap is shown as plain text (numbers, indents, 【】 for bold) in a code block with a copy button, and also copied to the clipboard, so it pastes cleanly into a spreadsheet cell or a chat; the Markdown original is saved locally.
-- Hard problems and lessons only when the work was genuinely hard, with causes taken from commit messages, never invented. No links by default; ask for PR links once and they are added from then on (GitHub, GitLab, CNB, Gitee, Bitbucket, no network).
+- Hard bugs come with their cause and fix, causes taken from commit messages, never invented. No links by default; ask for PR links once and they are added from then on (GitHub, GitLab, CNB, Gitee, Bitbucket).
 - Save it locally and remember your repositories and writing preferences.
 
 ### Install
@@ -121,7 +123,7 @@ Requires git and Python 3.9+ (standard library only).
 
 ### Use
 
-Say "write my weekly recap for last week", or invoke it: `/weekly-recap:weekly-recap` (Claude Code plugin), `/weekly-recap` (manual install), `$weekly-recap` (Codex). Each time it asks two things only, the range (this week, last week or your own) and the repositories (pick several; newly typed paths, one or several at a time, join the choices so you can tick them with the others), then writes and saves the recap. Picked repositories are remembered; ones with no commits are skipped.
+Say "write my weekly recap for last week", or invoke it: `/weekly-recap:weekly-recap` (Claude Code plugin), `/weekly-recap` (manual install), `$weekly-recap` (Codex). Each time it asks three things only, the range (this week, last week or your own), the repositories (pick several; newly typed paths, one or several at a time, join the choices so you can tick them with the others) and an optional note for next week (by default the plan is drafted from work in progress), then writes and saves the recap. Picked repositories are remembered; ones with no commits are skipped.
 
 ### Update
 
@@ -140,7 +142,7 @@ What changed in each version: [CHANGELOG](skills/weekly-recap/CHANGELOG.md) (in 
 
 ### Data and privacy
 
-- The scripts run only local `git` commands and read and write only `~/.weekly-recap/` (or `$WEEKLY_RECAP_HOME`), plus, for long ranges, a file of collected commits in the system temp directory that only you can read. Nothing is uploaded, and `git fetch` runs only after you agree.
+- The scripts run only local `git` commands and read and write only `~/.weekly-recap/` (or `$WEEKLY_RECAP_HOME`), plus, for long ranges, a file of collected commits in the system temp directory that only you can read. Nothing is uploaded. The chosen repositories are fetched before collecting; that only updates remote-tracking branches such as origin/master, never your local branches or files, and never asks for a password. Set `"fetch": false` in the config to turn it off.
 - The recap is written by the AI tool you use, so commit subjects and bodies, file paths and change counts are sent to that tool's model provider as conversation content, just as when you paste code into a chat. Keep this in mind for sensitive repositories.
 - Layout and config keys: [references/data.md](skills/weekly-recap/references/data.md).
 

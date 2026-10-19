@@ -13,8 +13,8 @@
         "name": "gluttony-club",
         "url": "https://github.com/gluttony-club"
       },
-      "description": "Write your weekly meeting recap from your own git commits across repositories: what you did, what mattered most and what was hard, saved locally.",
-      "version": "0.6.1",
+      "description": "Write your weekly meeting recap from your own git commits across repositories: this week's features, fixes and progress, and next week's plan, saved locally.",
+      "version": "0.7.0",
       "source": "./",
       "strict": false,
       "skills": ["./skills/weekly-recap"],

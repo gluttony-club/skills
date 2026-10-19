@@ -5,116 +5,122 @@ as content.
 
 ## A complete recap
 
-Input, in short: 23 commits in `shop-web` (checkout redesign with 6 commits,
-coupon stacking with 9, four fixes on iOS upload including one revert, a config
-refactor, two small fixes, plus lint and typo commits) and 4 commits in
-`api-server`. The checkout pull request was merged into master; coupon stacking
-went through the test branch. A commit body explains the iOS cause: the upload
-ran before the session refresh, so Safari sent an expired token.
+Input, in short: the previous recap planned "推动优惠券叠加上线" and "重做结算页".
+This range has 23 commits in `shop-web` and 4 in `api-server`: checkout
+redesign (merged into master), coupon stacking (on the test branch), four fixes
+on iOS upload including one revert, whose commit body says the upload ran
+before the session refresh so Safari sent an expired token, a shared date
+helper replacing three copies, payment settings moved into configuration, and
+lint and typo commits. The user wrote for next week: "做会员积分抵扣；帮小王排查了
+推送丢失的问题".
 
 ```markdown
 # 周报 (2026-03-02 ~ 2026-03-08)
 
-## shop-web
+## 本周工作
 
-- **新版结算页**（已合入 master）：地址、配送、支付合并为一页，下单从 4 步减到 2 步
-  - 刷新页面不丢失已填写的内容
-- **优惠券叠加**（已提测）：结算时自动选出最优组合，不可叠加的券给出原因
-- iOS 图片上传偶发失败已修复
-- 其他
-  - 支付配置改为按环境读取
-  - 订单列表空状态文案修正
-  - 商品图懒加载
+### 上周计划完成情况
 
-## api-server
+- 推动优惠券叠加上线：已提测，待上线
+- 重做结算页：已完成（已合入 master）
 
-- 新增优惠券组合计算接口，供结算页调用
-- 订单导出支持按渠道筛选
+### 功能交付
 
-## 难点与经验
+- **新版结算页**（shop-web，已合入 master）：地址、配送、支付合并为一页，下单从 4 步减到 2 步
+- **优惠券叠加**（shop-web、api-server，已提测）：结算时自动选出最优组合，不可叠加的券给出原因
+- 订单导出支持按渠道筛选（api-server，已合入 master）
 
-- **iOS 上传偶发失败**：一周内反复出现
-  - 原因：上传早于登录态刷新，Safari 带上了过期 token；先加的自动重试仍用旧 token，只会重复失败，已回滚
-  - 解决：上传前先刷新会话 → 问题消失。经验：先确认根因再加重试
+### 问题修复
+
+- **iOS 图片上传偶发失败**（shop-web）
+  - 原因：上传早于登录态刷新，Safari 带上了过期 token；先加的自动重试仍用旧 token，已回滚
+  - 解决：上传前先刷新会话，问题消失
+- 其他：订单列表空状态文案；切换地址后运费不刷新
+
+### 技术沉淀
+
+- 日期格式化抽成公共方法（shop-web），替换原来 3 处各自的实现
+- 支付渠道参数改为按环境配置，不再写死在代码里
+- 经验：偶发失败先确认根因再加重试，重试会掩盖问题
+
+### 团队贡献
+
+- 协助排查推送消息丢失的问题
+
+## 下周计划
+
+- 推动优惠券叠加上线，上线后核对优惠金额
+- 开发会员积分抵扣
 ```
 
 Why it works:
 
-- No summary at the top: the two bold names are the week's highlights, and
-  they lead their section.
-- 9 coupon commits became one item; three small changes sit under `其他`
-  instead of being dropped; lint and typo commits are gone.
-- Statuses appear only where the pull requests show them.
-- The iOS story is told once, in `难点与经验`; its item stays one short line.
-- No links: nobody clicks them in a meeting.
+- Every line says what was done or how far it got; nothing is there to look
+  busy. 9 coupon commits became one item; lint and typo commits are gone.
+- The hard problem is told once, with its cause from the commit body; the
+  routine fixes share one line.
+- `技术沉淀` names what others can now reuse; the lesson is a rule, not a story.
+- `团队贡献` holds only what the user said. No numbers of commits or tests.
+- The plan follows the work in progress and the user's own words.
 
-## A week without hard problems
+## A week without extras
 
-Most weeks look like this: no `难点与经验` section at all.
+Most weeks are like this: no hard problem, nothing left for others, no plan
+from the previous recap. The empty sections are simply absent.
 
 ```markdown
 # 周报 (2026-03-09 ~ 2026-03-15)
 
-## shop-web
+## 本周工作
+
+### 功能交付
 
 - **会员积分抵扣**（已提测）：结算时可用积分抵扣，最多抵扣订单金额的 20%
-- 商品详情页支持视频主图
-- 其他
-  - 购物车数量上限提示
-  - 修复切换地址后运费不刷新
+- 商品详情页支持视频主图（已合入 master）
+
+### 问题修复
+
+- 其他：购物车数量上限提示；切换地址后运费不刷新
+
+## 下周计划
+
+- 推动会员积分抵扣上线
 ```
 
 ## Before and after
 
-**A summary that repeats the body**
+**Workload instead of result**
 
-- Before: a `## 本周重点` section listing the same three items that follow.
-- After: no summary; bold the 1–3 most important item names and put them first.
+- Before: `- **Google One Tap 登录**：新增 2400 行代码、1000+ 行测试`
+- After: `- **Google One Tap 登录**（已合入 master）：未登录用户可一键用 Google 账号登录`
 
-**Activity instead of outcome**
+**Inflated words**
 
-- Before: `- 修改 checkout 页面组件和样式`
-- After: `- **新版结算页**：下单从 4 步减到 2 步`
+- Before: `- 全面赋能支付链路，显著提升转化体验`
+- After: `- 下单从 4 步减到 2 步`, or nothing, if no commit says what changed.
 
-**One commit per line**
+**Implementation detail in a feature**
 
-- Before:
-  ```markdown
-  - feat(coupon): add stacking rules
-  - feat(coupon): pick best combination
-  - fix(coupon): rounding error
-  - fix(coupon): hint for non-stackable coupons
-  ```
-- After: `- **优惠券叠加**：结算时自动选出最优组合，不可叠加的券给出原因`
+- Before: `- 购买转化推送到 dataLayer，推送成功才标记 reported，失败可重试`
+- After: `- 购买转化可回传广告平台`
 
-**Code names instead of business language**
+**A lesson hung under a feature**
 
-- Before: `- 购买转化推送到 dataLayer，上报地址改为 DATA_REPORTING_BASE_URL`
-- After: `- 购买转化可回传广告平台` and, in `其他`, `埋点上报地址改为配置项`
+- Before: a feature with the sub-item `经验：埋点查询失败时只跳过埋点`
+- After: the feature alone; the lesson, if worth keeping, under `技术沉淀` as a
+  rule, or the fix under `问题修复`.
 
-**A link after every item**
+**Value labels**
 
-- Before: `- 商品详情页支持视频主图（[#141](…)）` on every line
-- After: no links, unless `style.md` asks for them.
+- Before: `- 【增长】【商业化】优惠券叠加`
+- After: `- **优惠券叠加**（已提测）：结算时自动选出最优组合`
 
-**Small work dropped to fit**
+**A claimed status**
 
-- Before: three real fixes left out because the section was "full", or all
-  of them squeezed onto one line as `其他：A；B；C`.
-- After: `- 其他` with one sub-item per fix.
-
-**A routine bug written up as a hard problem**
-
-- Before: `## 难点与经验` with `**按钮颜色不对**：样式写错 → 改正`
-- After: the fix goes into `其他`, and the section is omitted.
-
-**Everything bold**
-
-- Before: `- **上线优惠券叠加**：**结算时自动选出最优组合**，**支持 3 种券**`
-- After: `- **优惠券叠加**：结算时自动选出最优组合，支持 3 种券`
+- Before: `- 优惠券叠加（已上线）` while its commits are only on the test branch
+- After: `- 优惠券叠加（已提测）`
 
 **Invented cause**
 
 - Before: `- **iOS 上传失败**：网络不稳定导致` (no commit or user says so)
-- After: `- iOS 图片上传偶发失败已修复`, and no `难点与经验` entry without a stated
-  cause.
+- After: `- iOS 图片上传偶发失败已修复`, without a cause.

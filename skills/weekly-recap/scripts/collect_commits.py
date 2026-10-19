@@ -7,8 +7,9 @@
       commits authored in the range, with change sizes, links and clues, per repository
 
 Repositories come from $WEEKLY_RECAP_HOME/config.json (default ~/.weekly-recap),
-or from --repo. Only local git commands run; nothing is fetched from the network.
-Uses only the Python standard library (3.9+).
+or from --repo. Before collecting, each repository's remotes are fetched so that
+merges done on the web count (see progress.py); --no-fetch or "fetch": false in
+config.json skips that. Uses only the Python standard library (3.9+).
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import links  # noqa: E402
+import progress  # noqa: E402
 import signals  # noqa: E402
 from date_range import InputError, bounds, local_timezone, parse_date  # noqa: E402
 from store import config_path, load_config  # noqa: E402
@@ -119,7 +121,8 @@ def to_local(iso: str) -> dt.datetime:
     return dt.datetime.fromisoformat(iso).astimezone()  # this machine's local time zone
 
 
-def collect_repo(entry: dict, start: dt.datetime, end: dt.datetime, config: dict, args) -> dict:
+def collect_repo(entry: dict, start: dt.datetime, end: dt.datetime, config: dict, args,
+                 fetched: dict | None = None) -> dict:
     path = Path(entry["path"]).expanduser()
     result = {"name": entry.get("name") or path.name, "path": str(path), "ok": False}
     top = git_toplevel(path) if path.exists() else None
@@ -192,6 +195,11 @@ def collect_repo(entry: dict, start: dt.datetime, end: dt.datetime, config: dict
         c["commit_url"] = urls["commit"].format(sha=c["sha"]) if "commit" in urls else None
         c["prs"] = [{**p, "url": urls["pr"].format(number=p["number"]) if "pr" in urls else None}
                     for p in found]
+    refs, labels = progress.statuses(top, config, start.isoformat(), commits)
+    for c in commits:
+        c["status"] = labels.get(c["sha"])  # None: on no progress branch yet, i.e. in progress
+        for p in c["prs"]:
+            p.pop("merge_sha", None)
     clues = signals.build(commits, file_lists)
     for c in commits:
         c["sha"] = c["sha"][:10]
@@ -208,6 +216,8 @@ def collect_repo(entry: dict, start: dt.datetime, end: dt.datetime, config: dict
         "authors": authors,
         "web_url": urls["web_url"],
         "forge": urls["forge"],
+        **(fetched or {"fetched": None}),
+        "status_branches": refs,
         "commit_count": len(commits),
         "duplicates_skipped": duplicates,
         "signals": clues,
@@ -276,7 +286,12 @@ def cmd_repos(args, config: dict) -> dict:
 
 def cmd_collect(args, config: dict) -> dict:
     start, end = bounds(parse_date(args.start), parse_date(args.end))
-    repos = [collect_repo(r, start, end, config, args) for r in select_repos(config, args.repo)]
+    entries = select_repos(config, args.repo)
+    tops = [git_toplevel(Path(e["path"]).expanduser()) for e in entries]
+    fetched = {}
+    if not args.no_fetch and config.get("fetch", True):
+        fetched = progress.fetch_all([t for t in tops if t is not None])
+    repos = [collect_repo(e, start, end, config, args, fetched.get(t)) for e, t in zip(entries, tops)]
     return {
         "timezone": local_timezone(),
         "start": args.start,
@@ -300,6 +315,7 @@ def main() -> int:
     p.add_argument("--end", required=True, help="last day, YYYY-MM-DD (inclusive)")
     p.add_argument("--repo", action="append", default=[], help="configured name or path; repeatable")
     p.add_argument("--author", action="append", default=[], help="name or email; repeatable")
+    p.add_argument("--no-fetch", action="store_true", help="use local history only; do not fetch remotes")
     p.add_argument("--max-files", type=int, default=5, help="largest files listed per commit (default 5)")
     p.add_argument("--body-chars", type=int, default=300, help="commit body characters kept (default 300)")
     p.add_argument("--output", nargs="?", const="", metavar="FILE",

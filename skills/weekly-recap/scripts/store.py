@@ -9,6 +9,8 @@
   store.py text --start DATE --end DATE [--copy]
                                             the saved recap as plain text for a spreadsheet
                                             cell or a chat; --copy puts it on the clipboard
+  store.py plan --before DATE               the "下周计划" items of the latest recap that
+                                            ends before DATE, to follow up this time
 
 Data lives in $WEEKLY_RECAP_HOME (default ~/.weekly-recap):
 
@@ -157,7 +159,7 @@ def describe_file(path: Path) -> dict | None:
     return {"path": str(path), "start": start, "end": end, "kind": kind}
 
 
-def cmd_list(args) -> dict:
+def all_recaps() -> list[dict]:
     home = data_home()
     recaps = []
     for year_dir in sorted(p for p in home.glob("[0-9][0-9][0-9][0-9]") if p.is_dir()):
@@ -173,11 +175,49 @@ def cmd_list(args) -> dict:
             by_range[key] = entry
     recaps = list(by_range.values())
     recaps.sort(key=lambda r: (r["start"], r["end"]))
+    return recaps
+
+
+def cmd_list(args) -> dict:
+    home = data_home()
+    recaps = all_recaps()
     if args.latest:
         recaps = recaps[-args.latest:]
     style = home / "style.md"
     return {"data_home": str(home), "style_path": str(style) if style.exists() else None,
             "count": len(recaps), "recaps": recaps}
+
+
+PLAN_HEADING = re.compile(r"^(#{1,6})\s*(下周计划|下周|Next week|Plans? for next week)\b", re.I)
+HEADING = re.compile(r"^(#{1,6})\s")
+LIST_ITEM = re.compile(r"^(\s*)(?:[-*+]|\d+[.)])\s+(.*)$")
+
+
+def plan_items(markdown: str) -> list[str]:
+    """Top-level items under the plan heading, without Markdown emphasis."""
+    items, level = [], None
+    for line in markdown.splitlines():
+        heading = PLAN_HEADING.match(line)
+        if heading:
+            level = len(heading.group(1))
+            continue
+        other = HEADING.match(line)
+        if level is not None and other and len(other.group(1)) <= level:
+            break
+        item = LIST_ITEM.match(line)
+        if level is not None and item and not item.group(1):
+            items.append(re.sub(r"\*\*(.+?)\*\*", r"\1", item.group(2)).strip())
+    return items
+
+
+def cmd_plan(args) -> dict:
+    before = parse_date(args.before).isoformat()
+    earlier = [r for r in all_recaps() if r["end"] < before]
+    if not earlier:
+        return {"path": None, "items": []}
+    last = earlier[-1]
+    text = Path(last["path"]).read_text(encoding="utf-8")
+    return {"path": last["path"], "start": last["start"], "end": last["end"], "items": plan_items(text)}
 
 
 def cmd_path(args) -> dict:
@@ -232,10 +272,12 @@ def main() -> int:
             p.add_argument("--overwrite", action="store_true", help="replace an existing recap, keeping a backup")
         if name in ("save", "text"):
             p.add_argument("--copy", action="store_true", help="copy the plain-text form to the clipboard")
+    p = sub.add_parser("plan", help="the next-week plan of the latest recap before a date")
+    p.add_argument("--before", required=True, help="first day of the new range, YYYY-MM-DD")
     args = parser.parse_args()
 
     handler = {"add-repo": cmd_add_repo, "list": cmd_list, "path": cmd_path, "save": cmd_save,
-               "text": cmd_text}[args.command]
+               "text": cmd_text, "plan": cmd_plan}[args.command]
     out = handler(args)
     print(json.dumps(out, ensure_ascii=False, indent=2))
     return 3 if out.get("exists") and not out.get("saved", True) else 0

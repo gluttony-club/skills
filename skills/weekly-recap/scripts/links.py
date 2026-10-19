@@ -101,7 +101,7 @@ def pull_requests(repo: Path, since: str, shas: set[str]) -> dict[str, list[dict
         fields = record.strip("\n").split("\x1f")
         if len(fields) != 5:
             continue
-        _, parents, merged_at, subject, body = fields
+        merge_sha, parents, merged_at, subject, body = fields
         number = next((int(m.group(1)) for p in PR_PATTERNS
                        for m in [p.search(subject) or p.search(body)] if m), None)
         parent_list = parents.split()
@@ -109,7 +109,7 @@ def pull_requests(repo: Path, since: str, shas: set[str]) -> dict[str, list[dict
             continue
         merged = _git(repo, "rev-list", f"--since={since}", parent_list[1], f"^{parent_list[0]}").split()
         source = SOURCE_BRANCH.search(subject)
-        pr = {"number": number, "merged_at": merged_at[:16],
+        pr = {"number": number, "merged_at": merged_at[:16], "merge_sha": merge_sha,
               "from_branch": (source.group(1) or source.group(2)) if source else None}
         for sha in shas.intersection(merged):
             if all(p["number"] != number for p in found.setdefault(sha, [])):

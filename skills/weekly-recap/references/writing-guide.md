@@ -65,16 +65,37 @@ translate them for other languages).
 - Within a section, the most important item first.
 - The project is named by its section; never repeat it in an item.
 
+## Plain words
+
+Write the way the team talks at the meeting, so that anyone in the room,
+including someone who does not know this code, gets each line the first time
+they hear it.
+
+- Use the names the team uses every day: 埋点, 购买, 付款, 下单, 登录, 页面,
+  弹窗. Not analytics, marketing or framework jargon such as 漏斗, 转化, 归因,
+  结构化数据, 预取, dataLayer, nor English terms nobody says aloud.
+- Say what the user sees or what happens:
+  - `开始播放时声音慢慢变大，关掉时慢慢变小`, not `背景音乐淡入淡出`
+  - `Chrome 会在后台提前加载英文页面`, not `浏览器预取到英文页面`
+  - `补充方便搜索引擎识别网站的信息`, not `添加 Organization 结构化数据`
+  - `购买埋点漏报`, not `购买漏斗与转化漏报`
+- Short spoken sentences, not stacks of nouns:
+  `付款成功的数据上报失败后被当成已上报，不会再补报`, not
+  `转化上报失败后过早标记为完成`.
+- Product and tool names the team says as they are stay as they are (Google One
+  Tap, Stripe, Docker, Tad 6.0). When the user's own recaps or note call
+  something by a name, use that name.
+
 ## 功能交付 (features)
 
 - One item per feature, however many commits it took: what now works, for
   whom, and why it matters, in business language.
 - Merge only commits that serve the same feature. Never bundle unrelated
   changes under a catch-all name such as 体验优化, 细节优化 or 若干改进; give each
-  its own item named for what it is (`播放体验：背景音乐淡入淡出`,
+  its own item named for what it is (`背景音乐：开始播放时声音慢慢变大`,
   `页脚社媒入口`). Small unrelated changes that are not worth an item go under
   其他 in `问题修复` if they fixed something, and are left out otherwise.
-  - Good: `**Google One Tap 一键登录**（已发布）：未登录用户可一键用 Google 账号登录，与现有 Google 登录共用账号关联和注册奖励`
+  - Good: `**Google One Tap 一键登录**（已发布）：没登录的用户可以一键用 Google 账号登录，账号和注册奖励跟原来的 Google 登录通用`
   - Weak: `新增 google-one-tap 组件和 /auth/one-tap 接口`
 - No implementation details here (retries, deduplication, env names, file
   paths, libraries). They belong nowhere in the recap unless they are the cause
@@ -143,8 +164,13 @@ when the user gave one.
 - From the work in progress: features `已提测` or still on a branch become
   `推动 X 上线` or `完成 X`; a fix waiting for verification becomes `验证 X`.
 - Add what the user wrote for next week, in their words, tidied.
-- Each item: what will be done, and the result wanted; a date only when the
-  user gave one. Do not invent new work.
+- Every item says what will be done and how to tell it is done: what will be
+  checked once it ships. Take the check from what the work touched, not from
+  a generic phrase:
+  - Good: `推动 Tad 6.0 模型升级上线，上线后确认音乐生成、翻唱和查积分都正常`
+  - Weak: `推动 Tad 6.0 模型升级上线`
+  - Good: `发布 Bing 新增事件配置，上线后核对每个事件都能收到`
+  A date only when the user gave one. Do not invent new work or targets.
 
 ## Status
 
@@ -185,7 +211,8 @@ items and move routine fixes into `其他` before cutting anything that mattered
 ## Before saving
 
 Check: every claim traces to a commit or the user's words; no section for
-refactors or "技术沉淀"; no workload numbers
-or inflated words; statuses as the script reports them, the least advanced per
-item; at most 3 bold item names; empty sections left out; the plan holds only
-work in progress and the user's own plans.
+refactors or "技术沉淀"; no workload numbers, inflated words or jargon the team
+would not say aloud; statuses as the script reports them, the least advanced
+per item; at most 3 bold item names; empty sections left out; every plan item
+says how it counts as done; the plan holds only work in progress and the
+user's own plans.

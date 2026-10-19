@@ -94,7 +94,7 @@ from the previous recap. The empty sections are simply absent.
 
 ## 下周计划
 
-- 推动会员积分抵扣上线
+- 推动会员积分抵扣上线，上线后确认抵扣金额和订单金额对得上
 ```
 
 ## Before and after
@@ -112,7 +112,7 @@ from the previous recap. The empty sections are simply absent.
 **Implementation detail in a feature**
 
 - Before: `- 购买转化推送到 dataLayer，推送成功才标记 reported，失败可重试`
-- After: `- 购买转化可回传广告平台`
+- After: `- 用户付款成功后，广告平台能收到这笔购买`
 
 **A lesson hung under a feature**
 
@@ -144,16 +144,30 @@ from the previous recap. The empty sections are simply absent.
 - After: its own item, since ordering failed:
   ```markdown
   - **埋点异常导致下单和商品列表失败**
-    - 原因：解析埋点用的商品快照、查询用户最近套餐失败时，会让创建结账和整个商品列表一起失败
-    - 解决：两处改为单独处理，失败时只跳过埋点，不影响下单
+    - 原因：埋点要用的商品信息、用户最近购买的套餐查询失败时，会连带让下单和整个商品列表一起报错
+    - 解决：把埋点和下单、商品列表分开，埋点出错只跳过埋点，不影响用户下单和看商品
   - 其他：Docker 构建缺少依赖
   ```
 
 **A catch-all name**
 
 - Before: `- 体验优化（已发布）：背景音乐淡入淡出、离开挽留图预加载、页脚社媒入口`
-- After: `- 播放体验（已发布）：背景音乐淡入淡出，离开挽留图提前加载` and
+- After: `- 背景音乐（已发布）：开始播放时声音慢慢变大，关掉时慢慢变小`,
+  `- 离开挽留弹窗（已发布）：弹窗一打开图片就能显示` and
   `- 页脚社媒入口（已发布）：补充 5 个社媒入口`
+
+**Jargon**
+
+- Before: `- **购买漏斗与转化漏报**`, with the cause `转化上报失败后过早标记为完成`
+- After: `- **购买相关埋点漏报**`, with the cause
+  `付款成功的数据上报失败后被当成已上报，不会再补报`
+- Before: `- 页脚社媒入口（已发布）：添加 Organization 结构化数据`
+- After: `- 页脚社媒链接（已发布）：补充方便搜索引擎识别网站的信息`
+
+**A plan without a finish line**
+
+- Before: `- 推动 Tad 6.0 模型升级上线`
+- After: `- 推动 Tad 6.0 模型升级上线，上线后确认音乐生成、翻唱和查积分都正常`
 
 **A claimed status**
 

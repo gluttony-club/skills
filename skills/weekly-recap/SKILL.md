@@ -4,7 +4,7 @@ description: Write a weekly recap (周报) from the user's own git commits acros
 license: MIT
 metadata:
   author: gluttony-club
-  version: "0.7.4"
+  version: "0.7.5"
 ---
 
 # Weekly recap
@@ -222,4 +222,6 @@ no "fetch?". Skip a question the user's request already answers ("上周的周�
 - Describe outcomes, not file edits. No workload numbers (lines, tests,
   commits, files), no inflated words, no value labels, no type tags like
   `[feat]`, no hashes.
+- Plain words, the way the team talks: 埋点, 购买, 付款 rather than 漏斗, 转化,
+  结构化数据; say what the user sees or what happens.
 - Merge related commits into one item; drop trivial ones.

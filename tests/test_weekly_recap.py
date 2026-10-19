@@ -185,7 +185,7 @@ class ProgressTest(RepoCase):
         self.commit(repo, "feat: local only", "2026-10-15T10:00:00+08:00")
         info, status = self.collected(repo)
         self.assertTrue(info["fetched"])
-        self.assertEqual(status, {"feat: shipped": "已合入 master", "feat: in test": "已提测",
+        self.assertEqual(status, {"feat: shipped": "已发布", "feat: in test": "已提测",
                                   "feat: local only": None})
 
     def test_a_merge_done_elsewhere_is_seen_only_after_fetching(self):
@@ -199,7 +199,7 @@ class ProgressTest(RepoCase):
         _, stale = self.collected(repo, "--no-fetch")
         self.assertEqual(stale["feat: coupon"], "已提测")
         _, fresh = self.collected(repo)
-        self.assertEqual(fresh["feat: coupon"], "已合入 master")
+        self.assertEqual(fresh["feat: coupon"], "已发布")
 
     def test_an_unreachable_remote_falls_back_to_local_history(self):
         repo = self.repo("web")
@@ -322,6 +322,12 @@ class PlainTextTest(RepoCase):
               "\n### 问题修复\n\n- b\n\n## 下周计划\n\n- 推动 A 上线\n")
         self.assertEqual(plain.plain_text(md), "本周工作\n一、功能交付\n1. 【A】（已提测）：a\n\n二、问题修复\n1. b\n"
                                                 "\n下周计划\n1. 推动 A 上线\n")
+
+    def test_three_heading_levels_number_projects_and_kinds_of_work(self):
+        md = ("# 周报 (2026-10-12 ~ 2026-10-18)\n\n## 本周工作\n\n### web\n\n#### 功能交付\n\n- **A**（已发布）：a\n"
+              "\n#### 问题修复\n\n- b\n\n### api\n\n- c（已提测）\n\n## 下周计划\n\n- 推动 c 上线\n")
+        self.assertEqual(plain.plain_text(md), "本周工作\n一、web\n（一）功能交付\n1. 【A】（已发布）：a\n（二）问题修复\n"
+                                                "1. b\n\n二、api\n1. c（已提测）\n\n下周计划\n1. 推动 c 上线\n")
 
     def test_an_older_one_line_other_item_is_split(self):
         out = plain.plain_text("## web\n\n- 首页改版\n- 其他：配置改为按环境读取；修复空状态文案\n")

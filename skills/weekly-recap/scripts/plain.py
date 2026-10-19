@@ -2,12 +2,12 @@
 
 Spreadsheet cells and many chat boxes keep only plain text: pasting rendered
 Markdown loses its bullets, bold and indentation. The plain form carries the
-structure in characters instead: "一、" for sections, "1. " for items, "   - "
-for sub-items, and 【】 for bold. When the recap has two heading levels (本周工作
-and 下周计划 above sections such as 功能交付), the upper level stays a plain line
-and "一、" numbers the sections under each. Every point gets its own line. The
-"# 周报 (…)" title is left out, since the cell or message it goes into already
-says what it is.
+structure in characters instead, in the usual Chinese document order: with
+headings on three levels (本周工作, a project, 功能交付), the top one stays a
+plain line, then "一、", "（一）", "1. " for items and "   - " for sub-items;
+with fewer levels the numbering starts at "一、". 【】 stands for bold. Every
+point gets its own line. The "# 周报 (…)" title is left out, since the cell or
+message it goes into already says what it is.
 """
 
 from __future__ import annotations
@@ -30,6 +30,10 @@ def section_number(n: int) -> str:
     return f"{NUMERALS[n - 1]}、" if n <= len(NUMERALS) else f"{n}、"
 
 
+def subsection_number(n: int) -> str:
+    return f"（{NUMERALS[n - 1]}）" if n <= len(NUMERALS) else f"（{n}）"
+
+
 def inline(text: str) -> str:
     text = re.sub(r"\[([^\]]+)\]\((\S+?)\)", r"\1（\2）", text)  # a kept link stays readable
     text = re.sub(r"\*\*(.+?)\*\*|__(.+?)__", lambda m: f"【{m.group(1) or m.group(2)}】", text)
@@ -37,12 +41,15 @@ def inline(text: str) -> str:
 
 
 def plain_text(markdown: str) -> str:
-    levels = sorted({len(m.group(0).split()[0]) for line in markdown.splitlines()
-                     for m in [HEADING.match(line.rstrip())] if m and not line.startswith("# ")})
-    top = levels[0] if len(levels) > 1 else None  # with one level, every heading is numbered
+    levels = sorted({len(line.split()[0]) for line in markdown.splitlines()
+                     if HEADING.match(line.rstrip()) and not line.startswith("# ")})
+    # Heading level -> its style: "plain" for the top of a two- or three-level recap, then 一、 and （一）.
+    styles = ["plain", "section", "subsection"] if len(levels) > 1 else ["section", "subsection"]
+    style_of = dict(zip(levels, styles))
+    counters = {"section": 0, "subsection": 0}
     lines: list[str] = []
-    number = section = 0
-    after_top = False
+    number = 0
+    just_headed = False
     for raw in markdown.splitlines():
         line = raw.rstrip()
         if not line.strip() or RULE.match(line):
@@ -51,20 +58,24 @@ def plain_text(markdown: str) -> str:
         if heading:
             if line.startswith("# "):
                 continue  # the title
-            level = len(line.split()[0])
-            if lines and not after_top:
+            style = style_of.get(len(line.split()[0]), "subsection")
+            if lines and not just_headed and style != "subsection":
                 lines.append("")
-            if level == top:
-                lines.append(inline(heading.group(1)))
-                section = 0
-                after_top = True
+            text = inline(heading.group(1))
+            if style == "plain":
+                counters = {"section": 0, "subsection": 0}
+                lines.append(text)
+            elif style == "section":
+                counters["section"] += 1
+                counters["subsection"] = 0
+                lines.append(section_number(counters["section"]) + text)
             else:
-                section += 1
-                lines.append(section_number(section) + inline(heading.group(1)))
-                after_top = False
+                counters["subsection"] += 1
+                lines.append(subsection_number(counters["subsection"]) + text)
             number = 0
+            just_headed = True
             continue
-        after_top = False
+        just_headed = False
         item = ITEM.match(line)
         if item and item.group(1):
             lines.append("   - " + inline(item.group(2)))

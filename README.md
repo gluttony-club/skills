@@ -8,14 +8,14 @@ gluttony-club 的开源 [Agent Skills](https://agentskills.io) 合集，同时�
 
 | Skill | 说明 | 状态 |
 | --- | --- | --- |
-| [`weekly-recap`](skills/weekly-recap/SKILL.md) | 从自己的 git 提交生成周报：本周工作（功能、问题修复、进度、技术沉淀）和下周计划，用于周会汇报 | v0.7.0 |
+| [`weekly-recap`](skills/weekly-recap/SKILL.md) | 从自己的 git 提交生成周报：本周工作（功能、问题修复、进度、技术沉淀）和下周计划，用于周会汇报 | v0.7.1 |
 | `okr-review` | 基于周报和 git 记录撰写 OKR 自评（目标、关键成果、权重、自评分、个人总结），周期可自选（半年 / 一年） | 计划中 |
 
 ### weekly-recap 能做什么
 
 - 选择时间：本周、上周、指定某周或自定义时间段，按你电脑的本地时区，从起始日 00:00:00 到结束日 23:59:59
 - 跨多个仓库收集**你自己**的提交：覆盖所有分支，按作者时间筛选，自动去重；先自动拉取远端，网页上做的合并也能算进来
-- 周报分「本周工作」和「下周计划」：本周工作按功能交付、问题修复、技术沉淀、团队贡献整理，并对照上一份周报的下周计划写出完成情况；每项标注进度（已合入 master、已预发布、已提测、开发中），按远程分支实际判断
+- 周报分「本周工作」和「下周计划」：本周工作按功能交付、问题修复、技术沉淀、团队贡献整理，并对照上一份周报的下周计划写出完成情况；按项目分区；每项标注进度（合入测试分支为已提测、合入 master 为已发布，其余为开发中），按远程分支实际判断
 - 写法真实朴素：只写提交和你说的内容，不写代码行数、测试数量这类工作量数字，不用夸大的词；最重要的 1–3 项加粗
 - 生成后以带复制按钮的代码框显示纯文本版（编号、缩进、【】代替加粗），同时自动复制到剪贴板，直接粘贴进表格或聊天也不会乱；Markdown 原文保存在本地
 - 有难度的问题写清原因和解法，原因只取自提交说明，不会编造；默认不带链接，需要时说一句「周报附上 PR 链接」即可（支持 GitHub、GitLab、CNB、Gitee、Bitbucket）
@@ -87,14 +87,14 @@ Open-source [Agent Skills](https://agentskills.io) by gluttony-club, for Claude 
 
 | Skill | Description | Status |
 | --- | --- | --- |
-| [`weekly-recap`](skills/weekly-recap/SKILL.md) | A weekly recap from your own git commits for the team meeting: this week's work (features, fixes, progress, what was left for others) and next week's plan | v0.7.0 |
+| [`weekly-recap`](skills/weekly-recap/SKILL.md) | A weekly recap from your own git commits for the team meeting: this week's work (features, fixes, progress, what was left for others) and next week's plan | v0.7.1 |
 | `okr-review` | An OKR self-review (objectives, key results, weights, self-scores, personal summary) drafted from your weekly recaps and git history, for any review period | Planned |
 
 ### What weekly-recap does
 
 - Pick a range: this week, last week, a given week, or a custom period, in your computer's local time zone, from 00:00:00 on the first day to 23:59:59 on the last.
 - Collect **your own** commits across repositories: every branch, filtered by author date, de-duplicated; remotes are fetched first so merges done on the web count.
-- Two parts, this week's work and next week's plan. This week is sorted into features, bug fixes, things left for later and team contribution, follows up the previous recap's plan, and marks each item's progress (merged, pre-release, in test, in progress) from the remote branches.
+- Two parts, this week's work and next week's plan. This week is sorted into features, bug fixes, things left for later and team contribution, follows up the previous recap's plan, grouped by project, and marks each item's progress (released once on master, in test once on the test branch, otherwise in progress) from the remote branches.
 - Plain and true: only what the commits and you say, no lines of code or test counts, no inflated words; the 1–3 most important items in bold.
 - The recap is shown as plain text (numbers, indents, 【】 for bold) in a code block with a copy button, and also copied to the clipboard, so it pastes cleanly into a spreadsheet cell or a chat; the Markdown original is saved locally.
 - Hard bugs come with their cause and fix, causes taken from commit messages, never invented. No links by default; ask for PR links once and they are added from then on (GitHub, GitLab, CNB, Gitee, Bitbucket).

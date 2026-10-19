@@ -7,8 +7,8 @@ they are. It never prompts; a remote that needs a password, is unreachable or
 is slow is skipped, and the local history is used as it is.
 
 A commit's status is the furthest branch that contains it, by default:
-main or master → 已合入 <branch>, a pre-release branch → 已预发布, a test
-branch → 已提测. `status_branches` in config.json replaces these rules with the
+main or master → 已发布, a pre-release branch → 已预发布, a test branch →
+已提测. `status_branches` in config.json replaces these rules with the
 team's own, as {"branch name": "label"}, furthest first. A commit squash- or
 merge-committed on the web counts through its pull request number.
 """
@@ -25,7 +25,7 @@ FETCH_TIMEOUT = 30  # seconds per repository
 
 # (branch name pattern, label), furthest first. {branch} is the matched name.
 DEFAULT_RULES = [
-    (r"main|master", "已合入 {branch}"),
+    (r"main|master", "已发布"),
     (r"pre-?release|preprod|pre|staging|release", "已预发布"),
     (r"test|testing|qa|sit|uat", "已提测"),
 ]

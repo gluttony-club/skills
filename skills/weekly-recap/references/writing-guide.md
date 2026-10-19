@@ -18,25 +18,31 @@ translate them for other languages).
 
 ### 上周计划完成情况
 
-- 上周计划的事：已完成（已合入 master）
+- 上周计划的事：已完成（已发布）
 
-### 功能交付
+### <project name>
 
-- **重要功能**（仓库，状态）：做成了什么，对用户或业务有什么用
+#### 功能交付
+
+- **重要功能**（已发布）：做成了什么，对用户或业务有什么用
   - 范围或影响，一句话
-- 次要功能（仓库，状态）：做成了什么
+- 次要功能（已提测）：做成了什么
 
-### 问题修复
+#### 问题修复
 
-- **有难度的问题**（仓库）：现象
+- **有难度的问题**：现象
   - 原因：…
   - 解决：…
 - 其他：小问题 A；小问题 B
 
-### 技术沉淀
+#### 技术沉淀
 
-- 留下的可复用的东西（仓库）：是什么，哪里能用上
+- 留下的可复用的东西：是什么，哪里能用上
 - 经验：一句以后能直接用的结论
+
+### <next project name>
+
+- 只有一类工作时，直接列条目（已发布）
 
 ### 团队贡献
 
@@ -49,18 +55,23 @@ translate them for other languages).
 
 - `本周工作` and `下周计划` are always the two parts, whatever day the meeting
   is held.
-- A section appears only with content. `功能交付` and `问题修复` are there most
-  weeks; `技术沉淀`, `团队贡献` and `上周计划完成情况` only when there is
-  something true to put in them. Never write "无".
+- Under `本周工作`, one `###` section per project (its `name`), the project with
+  the most important work first. Inside a project, `####` sections in the
+  order 功能交付, 问题修复, 技术沉淀; a project with only one kind of work lists
+  its items directly, without a `####` heading. `上周计划完成情况` comes first
+  and `团队贡献` last, as `###` sections of their own, since they are not tied
+  to one project.
+- A section appears only with content. `技术沉淀`, `团队贡献` and
+  `上周计划完成情况` only when there is something true to put in them. Never
+  write "无".
 - Within a section, the most important item first.
-- Name the repo in the brackets before the status: `（ai-chat-video，已合入
-  master）`. With a single repo in the recap, leave the repo name out.
+- The project is named by its section; never repeat it in an item.
 
 ## 功能交付 (features)
 
 - One item per feature, however many commits it took: what now works, for
   whom, and why it matters, in business language.
-  - Good: `**Google One Tap 一键登录**（已合入 master）：未登录用户可一键用 Google 账号登录，与现有 Google 登录共用账号关联和注册奖励`
+  - Good: `**Google One Tap 一键登录**（已发布）：未登录用户可一键用 Google 账号登录，与现有 Google 登录共用账号关联和注册奖励`
   - Weak: `新增 google-one-tap 组件和 /auth/one-tap 接口`
 - No implementation details here (retries, deduplication, env names, file
   paths, libraries). They belong nowhere in the recap unless they are the cause
@@ -115,11 +126,14 @@ when the user gave one.
 ## Status
 
 Each commit carries a `status` worked out from the remote branches after a
-fetch: `已合入 master`, `已预发布`, `已提测`, or none while still in progress.
-An item's status is the least advanced status among its commits, so it never
-claims more than is true; with no status write `开发中`. When a repo was not
-fetched (`fetched: false`), its statuses may be behind; say so in the note
-under the recap, not in the item. Never write `已上线` unless the user says so.
+fetch: `已发布` once it is on master or main, `已提测` once it is on the test
+branch, `已预发布` on a pre-release branch, or none while still in progress.
+Write the status in brackets after the item name, using these words only: no
+branch names such as "已合入 master". An item's status is the least advanced
+status among its commits, so it never claims more than is true; with no status
+write `开发中`. When a repo was not fetched (`fetched: false`), its statuses may
+be behind; say so in the note under the recap, not in the item. A team's own
+`status_branches` labels replace these words.
 
 ## Emphasis
 

@@ -4,7 +4,7 @@ description: Write a weekly recap (周报) from the user's own git commits acros
 license: MIT
 metadata:
   author: gluttony-club
-  version: "0.7.0"
+  version: "0.7.1"
 ---
 
 # Weekly recap
@@ -112,8 +112,9 @@ no "fetch?". Skip a question the user's request already answers ("上周的周�
    - The script first fetches each repo's remotes, without asking: `git fetch`
      only updates remote-tracking branches such as origin/master, never local
      branches or files, and it never waits for a password. This brings in
-     merges done on the web, so each commit's `status` (`已合入 master`,
-     `已预发布`, `已提测`, or null while in progress) is current. A repo with
+     merges done on the web, so each commit's `status` (`已发布` on master or
+     main, `已预发布`, `已提测` on the test branch, or null while in progress)
+     is current. A repo with
      `fetched: false` uses local history; its `fetch_error` goes in the note
      under the recap. `"fetch": false` in config.json turns fetching off.
    - For long ranges add `--output` with no file name: the JSON goes to the
@@ -152,9 +153,10 @@ no "fetch?". Skip a question the user's request already answers ("上周的周�
    - `explained`: commits whose body explains why; read these for causes,
      trade-offs and lessons.
 
-   Sort each work item into `功能交付`, `问题修复`, `技术沉淀` (shared helpers,
-   configuration instead of hard-coded values, removed duplication, build or
-   release guards, conventions) or `团队贡献`.
+   Group the work by project, then sort each project's items into `功能交付`,
+   `问题修复` and `技术沉淀` (shared helpers, configuration instead of hard-coded
+   values, removed duplication, build or release guards, conventions).
+   `团队贡献` is a section of its own, across projects.
 
 5. Do not stop to ask what was hard. Write what the commits and the user's
    note support. A cause goes into `问题修复` only when a commit body or the
@@ -165,7 +167,8 @@ no "fetch?". Skip a question the user's request already answers ("上周的周�
    each section, status, what never to write, length) and
    [references/examples.md](references/examples.md) (full examples and
    before/after pairs). The title is `# 周报 (START ~ END)` with the range from
-   step 1, then `## 本周工作` with its `###` sections and `## 下周计划`.
+   step 1, then `## 本周工作` with a `###` section per project (`####` for
+   功能交付, 问题修复, 技术沉淀 inside it), and `## 下周计划`.
 
    No links unless `style.md` asks for them. Then, when a commit has several
    `prs`, use the one whose `from_branch` is the feature branch rather than a
@@ -187,8 +190,8 @@ no "fetch?". Skip a question the user's request already answers ("上周的周�
    `@'…'@ | py -3 <skill-dir>/scripts/store.py save --start START --end END --overwrite --copy`.
 
    The plain-text form is what a spreadsheet cell or a chat box keeps: no title,
-   `本周工作` and `下周计划` as plain lines, `一、` for the sections under them,
-   numbered items, `【】` for bold. Leave out `--copy` when `style.md` says not
+   `本周工作` and `下周计划` as plain lines, `一、` for projects, `（一）` for
+   功能交付 and the like, numbered items, `【】` for bold. Leave out `--copy` when `style.md` says not
    to touch the clipboard.
 
 8. Show the result as `plain_text` inside a fenced `text` code block, exactly

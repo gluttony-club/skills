@@ -21,27 +21,33 @@ lint and typo commits. The user wrote for next week: "做会员积分抵扣；�
 
 ### 上周计划完成情况
 
-- 推动优惠券叠加上线：已提测，待上线
-- 重做结算页：已完成（已合入 master）
+- 推动优惠券叠加上线：已提测，待发布
+- 重做结算页：已完成（已发布）
 
-### 功能交付
+### shop-web
 
-- **新版结算页**（shop-web，已合入 master）：地址、配送、支付合并为一页，下单从 4 步减到 2 步
-- **优惠券叠加**（shop-web、api-server，已提测）：结算时自动选出最优组合，不可叠加的券给出原因
-- 订单导出支持按渠道筛选（api-server，已合入 master）
+#### 功能交付
 
-### 问题修复
+- **新版结算页**（已发布）：地址、配送、支付合并为一页，下单从 4 步减到 2 步
+- **优惠券叠加**（已提测）：结算时自动选出最优组合，不可叠加的券给出原因
 
-- **iOS 图片上传偶发失败**（shop-web）
+#### 问题修复
+
+- **iOS 图片上传偶发失败**
   - 原因：上传早于登录态刷新，Safari 带上了过期 token；先加的自动重试仍用旧 token，已回滚
   - 解决：上传前先刷新会话，问题消失
 - 其他：订单列表空状态文案；切换地址后运费不刷新
 
-### 技术沉淀
+#### 技术沉淀
 
-- 日期格式化抽成公共方法（shop-web），替换原来 3 处各自的实现
-- 支付渠道参数改为按环境配置，不再写死在代码里
+- 日期格式化抽成公共方法，替换原来 3 处各自的实现
 - 经验：偶发失败先确认根因再加重试，重试会掩盖问题
+
+### api-server
+
+- 新增优惠券组合计算接口，供结算页调用（已提测）
+- 订单导出支持按渠道筛选（已发布）
+- 支付渠道参数改为按环境配置，不再写死在代码里（已发布）
 
 ### 团队贡献
 
@@ -59,6 +65,8 @@ Why it works:
   busy. 9 coupon commits became one item; lint and typo commits are gone.
 - The hard problem is told once, with its cause from the commit body; the
   routine fixes share one line.
+- Each project has its own section, so no item names its project; the small
+  api-server section lists its items without sub-headings.
 - `技术沉淀` names what others can now reuse; the lesson is a rule, not a story.
 - `团队贡献` holds only what the user said. No numbers of commits or tests.
 - The plan follows the work in progress and the user's own words.
@@ -73,12 +81,14 @@ from the previous recap. The empty sections are simply absent.
 
 ## 本周工作
 
-### 功能交付
+### shop-web
+
+#### 功能交付
 
 - **会员积分抵扣**（已提测）：结算时可用积分抵扣，最多抵扣订单金额的 20%
-- 商品详情页支持视频主图（已合入 master）
+- 商品详情页支持视频主图（已发布）
 
-### 问题修复
+#### 问题修复
 
 - 其他：购物车数量上限提示；切换地址后运费不刷新
 
@@ -92,7 +102,7 @@ from the previous recap. The empty sections are simply absent.
 **Workload instead of result**
 
 - Before: `- **Google One Tap 登录**：新增 2400 行代码、1000+ 行测试`
-- After: `- **Google One Tap 登录**（已合入 master）：未登录用户可一键用 Google 账号登录`
+- After: `- **Google One Tap 登录**（已发布）：未登录用户可一键用 Google 账号登录`
 
 **Inflated words**
 
@@ -117,8 +127,13 @@ from the previous recap. The empty sections are simply absent.
 
 **A claimed status**
 
-- Before: `- 优惠券叠加（已上线）` while its commits are only on the test branch
+- Before: `- 优惠券叠加（已发布）` while its commits are only on the test branch
 - After: `- 优惠券叠加（已提测）`
+
+**Branch names as status**
+
+- Before: `- 优惠券叠加（ai-chat-video，已合入 master）`
+- After: under the project's own section, `- 优惠券叠加（已发布）`
 
 **Invented cause**
 

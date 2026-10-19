@@ -34,7 +34,7 @@ in `$WEEKLY_RECAP_HOME`).
                  "pr": "https://git.example.com/tool/merge/{number}" } }
   ],
   "author_aliases": ["old-name", "old@example.com"],
-  "status_branches": { "master": "已合入 master", "release": "已预发布", "test": "已提测" },
+  "status_branches": { "master": "已发布", "release": "已预发布", "test": "已提测" },
   "fetch": true
 }
 ```
@@ -45,7 +45,7 @@ in `$WEEKLY_RECAP_HOME`).
 | `repos[].path` | Local clone. |
 | `repos[].links` | Optional. Link templates when the host is not GitHub, GitLab, CNB, Gitee or Bitbucket. |
 | `author_aliases` | Optional. Other names or emails that are also the user, added to each repo's `git config user.name` / `user.email`. |
-| `status_branches` | Optional. Branch names (without the remote) and the status a commit on them gets, furthest first. Replaces the defaults: main/master → `已合入 <branch>`, pre-release/staging/release → `已预发布`, test/qa/uat → `已提测`. |
+| `status_branches` | Optional. Branch names (without the remote) and the status a commit on them gets, furthest first. Replaces the defaults: main/master → `已发布`, pre-release/staging/release → `已预发布`, test/qa/uat → `已提测`. |
 | `fetch` | Optional, default `true`. Whether the remotes are fetched before collecting. `git fetch` only updates remote-tracking branches, never prompts, and gives up after 30 seconds per repo. |
 
 Dates use this machine's local time zone; there is no time zone setting. On

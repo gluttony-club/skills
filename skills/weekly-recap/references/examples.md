@@ -10,8 +10,9 @@ This range has 23 commits in `shop-web` and 4 in `api-server`: checkout
 redesign (merged into master), coupon stacking (on the test branch), four fixes
 on iOS upload including one revert, whose commit body says the upload ran
 before the session refresh so Safari sent an expired token, a shared date
-helper replacing three copies, payment settings moved into configuration, and
-lint and typo commits. The user wrote for next week: "做会员积分抵扣；帮小王排查了
+helper replacing three copies, payment settings moved into configuration, a
+release check that blocks builds with missing environment variables, and lint
+and typo commits. The user wrote for next week: "做会员积分抵扣；帮小王排查了
 推送丢失的问题".
 
 ```markdown
@@ -36,21 +37,17 @@ lint and typo commits. The user wrote for next week: "做会员积分抵扣；�
 - **iOS 图片上传偶发失败**
   - 原因：上传早于登录态刷新，Safari 带上了过期 token；先加的自动重试仍用旧 token，已回滚
   - 解决：上传前先刷新会话，问题消失
+  - 经验：偶发失败先确认根因再加重试，重试会掩盖问题
 - 其他：订单列表空状态文案；切换地址后运费不刷新
-
-#### 技术沉淀
-
-- 日期格式化抽成公共方法，替换原来 3 处各自的实现
-- 经验：偶发失败先确认根因再加重试，重试会掩盖问题
 
 ### api-server
 
 - 新增优惠券组合计算接口，供结算页调用（已提测）
 - 订单导出支持按渠道筛选（已发布）
-- 支付渠道参数改为按环境配置，不再写死在代码里（已发布）
 
 ### 团队贡献
 
+- 发布前自动检查缺失的环境变量，所有服务的构建都会拦下这类配置错误
 - 协助排查推送消息丢失的问题
 
 ## 下周计划
@@ -67,7 +64,10 @@ Why it works:
   routine fixes share one line.
 - Each project has its own section, so no item names its project; the small
   api-server section lists its items without sub-headings.
-- `技术沉淀` names what others can now reuse; the lesson is a rule, not a story.
+- The date helper and the payment configuration are not mentioned: useful
+  code hygiene, but nothing others use or a lead needs to hear. The release
+  check is, so it sits under `团队贡献` with what it protects.
+- The lesson hangs under the hard problem it came from, as a rule.
 - `团队贡献` holds only what the user said. No numbers of commits or tests.
 - The plan follows the work in progress and the user's own words.
 
@@ -117,8 +117,15 @@ from the previous recap. The empty sections are simply absent.
 **A lesson hung under a feature**
 
 - Before: a feature with the sub-item `经验：埋点查询失败时只跳过埋点`
-- After: the feature alone; the lesson, if worth keeping, under `技术沉淀` as a
-  rule, or the fix under `问题修复`.
+- After: the feature alone; the fix, if worth telling, under `问题修复`, with a
+  `经验：` sub-item only when the lesson is not obvious.
+
+**A section padded with refactors**
+
+- Before: a `技术沉淀` section with `请求 ID 生成抽成公共方法`, `上报地址改为配置项`
+  and a lesson that repeats a fix above
+- After: no such section. The first goes under 其他 as the problem it fixed
+  (`非 HTTPS 页面请求出错`), the second is left out, the lesson is dropped.
 
 **Value labels**
 

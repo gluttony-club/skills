@@ -4,7 +4,7 @@ description: Write a weekly recap (周报) from the user's own git commits acros
 license: MIT
 metadata:
   author: gluttony-club
-  version: "0.7.1"
+  version: "0.7.2"
 ---
 
 # Weekly recap
@@ -153,10 +153,11 @@ no "fetch?". Skip a question the user's request already answers ("上周的周�
    - `explained`: commits whose body explains why; read these for causes,
      trade-offs and lessons.
 
-   Group the work by project, then sort each project's items into `功能交付`,
-   `问题修复` and `技术沉淀` (shared helpers, configuration instead of hard-coded
-   values, removed duplication, build or release guards, conventions).
-   `团队贡献` is a section of its own, across projects.
+   Group the work by project, then sort each project's items into `功能交付`
+   and `问题修复`. Work others can use (a shared package, a team tool, a CI or
+   release check, a written convention or document) goes under `团队贡献`, a
+   section of its own across projects. Refactors and configuration changes
+   get no section: under 其他 when they fixed something, otherwise left out.
 
 5. Do not stop to ask what was hard. Write what the commits and the user's
    note support. A cause goes into `问题修复` only when a commit body or the
@@ -168,7 +169,7 @@ no "fetch?". Skip a question the user's request already answers ("上周的周�
    [references/examples.md](references/examples.md) (full examples and
    before/after pairs). The title is `# 周报 (START ~ END)` with the range from
    step 1, then `## 本周工作` with a `###` section per project (`####` for
-   功能交付, 问题修复, 技术沉淀 inside it), and `## 下周计划`.
+   功能交付 and 问题修复 inside it), and `## 下周计划`.
 
    No links unless `style.md` asks for them. Then, when a commit has several
    `prs`, use the one whose `from_branch` is the feature branch rather than a

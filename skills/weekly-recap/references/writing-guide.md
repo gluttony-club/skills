@@ -35,18 +35,13 @@ translate them for other languages).
   - 解决：…
 - 其他：小问题 A；小问题 B
 
-#### 技术沉淀
-
-- 留下的可复用的东西：是什么，哪里能用上
-- 经验：一句以后能直接用的结论
-
 ### <next project name>
 
 - 只有一类工作时，直接列条目（已发布）
 
 ### 团队贡献
 
-- 对团队有用的事
+- 团队能直接用上的东西，或帮到别人的事
 
 ## 下周计划
 
@@ -56,13 +51,16 @@ translate them for other languages).
 - `本周工作` and `下周计划` are always the two parts, whatever day the meeting
   is held.
 - Under `本周工作`, one `###` section per project (its `name`), the project with
-  the most important work first. Inside a project, `####` sections in the
-  order 功能交付, 问题修复, 技术沉淀; a project with only one kind of work lists
-  its items directly, without a `####` heading. `上周计划完成情况` comes first
+  the most important work first. Inside a project, the `####` sections
+  功能交付 and 问题修复; a project with only one kind of work lists its items
+  directly, without a `####` heading. There is no section for refactors or
+  "技术沉淀": what others can reuse goes under `团队贡献`, the rest under 其他
+  or nowhere. `上周计划完成情况` comes first
   and `团队贡献` last, as `###` sections of their own, since they are not tied
   to one project.
-- A section appears only with content. `技术沉淀`, `团队贡献` and
-  `上周计划完成情况` only when there is something true to put in them. Never
+- A section appears only with content. `团队贡献` and `上周计划完成情况` only
+  when there is something true to put in them; most weeks have no
+  `团队贡献`. Never
   write "无".
 - Within a section, the most important item first.
 - The project is named by its section; never repeat it in an item.
@@ -75,7 +73,7 @@ translate them for other languages).
   - Weak: `新增 google-one-tap 组件和 /auth/one-tap 接口`
 - No implementation details here (retries, deduplication, env names, file
   paths, libraries). They belong nowhere in the recap unless they are the cause
-  of a fixed problem or a reusable piece under `技术沉淀`.
+  of a fixed problem.
 - A sub-item only for scope or effect that matters to users or the business
   (`覆盖设置页和积分不足弹窗 2 个入口`), at most one.
 
@@ -85,26 +83,31 @@ translate them for other languages).
   protects revenue or data gets its own item: the symptom as the bold name,
   then `原因：` and `解决：` sub-items, from what a commit body or the user
   states. This is where the lead sees how someone solves problems.
+- Add a third sub-item `经验：` only for a lesson that is not obvious and that
+  others on the team can apply, stated as a rule; never one that restates the
+  cause or the fix.
 - Without a stated cause, write the symptom and that it is fixed; never guess
   a cause.
-- Routine fixes share one `其他：A；B` line, a few words each.
-
-## 技术沉淀 (what was left for later)
-
-Things that make the next piece of work easier, taken from the commits: a
-helper or component pulled out for shared use, hard-coded values turned into
-configuration, a duplicated logic made single, a guard added to a build or
-release, a convention or document written down. Say what it is and where it is
-used. Add `经验：` with a lesson worth keeping, stated as a rule someone else can
-follow (`关键埋点不依赖第三方 SDK 的事件，由自己的代码在确定时机上报`), only when a
-commit body or the user supports it. At most three items.
+- Routine fixes share one `其他：A；B` line, a few words each, and so do small
+  refactors or configuration changes worth a mention, described by their
+  effect (`非 HTTPS 页面请求出错`), not by the code change.
 
 ## 团队贡献 (team contribution)
 
-Work that helps others beyond the user's own tasks: code in a shared package
-others use, tooling or CI for the team, documentation, fixing a problem in
-someone else's area, and what the user says (helped a colleague debug, gave a
-talk, reviewed code). Only what the commits or the user show; omit the section
+Work whose value reaches beyond the user's own tasks, with a bar a lead would
+recognise:
+
+- something others use: a shared component or package other modules or people
+  actually use, a tool or script for the team, a CI or release check that
+  stops a whole kind of mistake, monitoring or alerting;
+- something written down: a convention, design document, runbook or
+  post-mortem;
+- help the user describes: debugging with a colleague, a talk, reviews.
+
+Say what it is and who or what uses it. A helper pulled out inside one module,
+a hard-coded value moved into configuration or a cleanup is not a
+contribution; it goes under 其他 in `问题修复` when it fixed something, and is
+left out otherwise. Only what the commits or the user show; omit the section
 otherwise. Never infer contribution from volume of work.
 
 ## 上周计划完成情况 (last week's plan)
@@ -161,7 +164,8 @@ items and move routine fixes into `其他` before cutting anything that mattered
 
 ## Before saving
 
-Check: every claim traces to a commit or the user's words; no workload numbers
+Check: every claim traces to a commit or the user's words; no section for
+refactors or "技术沉淀"; no workload numbers
 or inflated words; statuses as the script reports them, the least advanced per
 item; at most 3 bold item names; empty sections left out; the plan holds only
 work in progress and the user's own plans.
